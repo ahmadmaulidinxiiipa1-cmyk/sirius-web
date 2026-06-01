@@ -3,34 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sirius Web Builder</title>
+    <title>Sirius Web Builder - Editor</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
     <style>
         body { 
-            margin: 0; 
-            display: flex; 
-            height: 100vh; 
-            font-family: Arial, sans-serif; 
-            background-color: #0b0c10; 
-            color: #c5c6c7; 
-            overflow: hidden;
+            margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: #0b0c10; color: #c5c6c7; overflow: hidden;
         }
         
-        #sidebar { 
-            width: 250px; 
-            background: #1f2833; 
-            padding: 20px; 
-            border-right: 2px solid #66fcf1; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-            z-index: 10;
-            transition: margin-left 0.4s ease;
-            overflow-y: auto; 
-            display: flex;
-            flex-direction: column;
+        /* -- PANEL KIRI -- */
+        #sidebar-kiri { 
+            width: 250px; background: #1f2833; padding: 20px; 
+            border-right: 2px solid #66fcf1; box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 1000; transition: margin-left 0.4s ease; overflow-y: auto; 
+            display: flex; flex-direction: column;
         }
-        
         .sidebar-tersembunyi { margin-left: -300px; }
-        
-        #sidebar h2 { color: #66fcf1; margin-top: 0; margin-bottom: 5px;}
+        #sidebar-kiri h2 { color: #66fcf1; margin-top: 0; margin-bottom: 5px;}
         
         .btn-aksi-panel {
             background: transparent; color: #66fcf1; border: 1px solid #66fcf1;
@@ -41,113 +33,139 @@
         
         #btn-buka-panel {
             position: absolute; top: 20px; left: 20px; background: #1f2833;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: auto; z-index: 5; display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: auto; z-index: 1000; display: none;
         }
 
-        #canvas { flex-grow: 1; position: relative; overflow: hidden; }
+        /* -- AREA KANVAS -- */
+        #canvas { flex-grow: 1; position: relative; overflow: hidden; transition: 0.3s; }
+        
+        /* Nama Desain & Status Simpan */
+        #nama-desain-container {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(31, 40, 51, 0.8); padding: 8px 20px; border-radius: 30px;
+            border: 1px solid #45a29e; display: flex; align-items: center; gap: 10px; z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        #nama-desain-container input {
+            background: transparent; border: none; color: #66fcf1; font-size: 16px;
+            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 250px;
+        }
+        #nama-desain-container input::placeholder { color: #45a29e; }
 
-        .teks-kanvas {
-            color: #66fcf1; opacity: 0.1; text-align: center; 
-            margin-top: 20%; font-size: 2em; user-select: none;
+        #status-simpan {
+            position: absolute; top: 20px; right: 20px; background: rgba(31, 40, 51, 0.8);
+            color: #27ae60; padding: 8px 15px; border-radius: 20px; font-size: 14px;
+            font-weight: bold; z-index: 1000; transition: all 0.3s ease;
         }
         
-        .grup-tombol {
-            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
+        /* Tombol Mode Pratinjau Spesial */
+        #btn-pratinjau {
+            position: absolute; bottom: 30px; right: 30px; background: #f39c12; color: #fff;
+            border: none; padding: 15px 25px; border-radius: 30px; font-weight: bold; font-size: 16px;
+            cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s;
         }
+        #btn-pratinjau:hover { background: #e67e22; transform: scale(1.05); }
 
-        .pembatas-menu {
-            border-top: 1px solid #45a29e; margin: 15px 0; padding-top: 15px;
-            color: #45a29e; font-size: 14px; font-weight: bold;
-        }
+        .teks-kanvas { color: #66fcf1; opacity: 0.1; text-align: center; margin-top: 20%; font-size: 2em; user-select: none; z-index: 0; }
 
-        .btn { 
-            background: #66fcf1; color: #0b0c10; border: none; padding: 10px 15px; 
-            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
+        /* -- MENU MENGAMBANG -- */
+        #menu-mengambang {
+            position: absolute; background: #1f2833; border: 2px solid #66fcf1;
+            border-radius: 8px; padding: 12px; display: none; flex-direction: column; gap: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7); z-index: 2000;
+            transition: opacity 0.2s; /* Animasi saat muncul/hilang halus */
         }
+        #menu-mengambang::after {
+            content: ''; position: absolute; bottom: -10px; left: 20px;
+            border-width: 10px 10px 0; border-style: solid; border-color: #66fcf1 transparent transparent transparent;
+        }
+        
+        .baris-kontrol { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .kontrol-item { display: flex; align-items: center; gap: 5px; }
+        .kontrol-item label { color: #c5c6c7; font-size: 12px; font-weight: bold; }
+        
+        #menu-mengambang input[type="color"] { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; border-radius: 5px; background: none; }
+        #menu-mengambang input[type="number"], #menu-mengambang input[type="text"], #menu-mengambang select {
+            padding: 5px; border-radius: 5px; border: none; background: #0b0c10; color: #66fcf1; font-size: 12px; font-family: inherit;
+        }
+        #menu-mengambang input[type="number"] { width: 60px; }
+        #menu-mengambang input[type="text"] { width: 120px; }
+        
+        .btn-mini-aksi { background: #2c3e50; color: #66fcf1; border: 1px solid #45a29e; border-radius: 5px; padding: 5px 8px; cursor: pointer; font-size: 14px; transition: 0.3s;}
+        .btn-mini-aksi:hover { background: #45a29e; color: #0b0c10; }
+        .btn-mini-hapus { background: #c0392b; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px; transition: 0.3s; margin-left: auto;}
+        .btn-mini-hapus:hover { background: #e74c3c; }
+
+        /* Editor LaTeX */
+        #kontrol-rumus textarea {
+            width: 100%; box-sizing: border-box; background: #0b0c10; color: #f39c12;
+            border: 1px solid #45a29e; border-radius: 5px; padding: 8px; font-family: monospace;
+            resize: vertical; font-size: 14px; margin-top: 5px;
+        }
+        .grid-simbol { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; max-width: 320px;}
+        .grid-simbol button { flex: 1 1 12%; padding: 4px; font-size: 12px;}
+
+        /* -- GAYA TOMBOL MENU KIRI -- */
+        .grup-tombol { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .pembatas-menu { border-top: 1px solid #45a29e; margin: 15px 0; padding-top: 15px; color: #45a29e; font-size: 14px; font-weight: bold; }
+        .btn { background: #66fcf1; color: #0b0c10; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn:hover { background: #45a29e; color: white; }
-
-        .btn-matematika {
-            background: #f39c12; color: white; border: none; padding: 10px 15px; 
-            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
-        }
+        .btn-matematika { background: #f39c12; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn-matematika:hover { background: #e67e22; }
-
-        /* Tombol Sistem (Simpan/Muat) */
-        .btn-sistem {
-            background: #27ae60; color: white; border: none; padding: 10px 15px; 
-            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
-        }
-        .btn-sistem:hover { background: #2ecc71; }
         
-        .btn-bahaya {
-            background: #c0392b; color: white; border: none; padding: 10px 15px; 
-            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
-        }
+        .area-sistem { margin-top: auto; padding-top: 20px; }
+        .btn-sistem { background: #27ae60; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-sistem:hover { background: #2ecc71; }
+        .btn-bahaya { background: #c0392b; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn-bahaya:hover { background: #e74c3c; }
 
-        /* Area bawah sidebar untuk tombol sistem */
-        .area-sistem {
-            margin-top: auto; /* Mendorong tombol sistem ke paling bawah */
-            padding-top: 20px;
-        }
+        .komponen-aktif { outline: none !important; box-shadow: 0 0 0 3px #f39c12, 0 5px 15px rgba(0,0,0,0.5) !important; }
+        .komponen-terkunci.komponen-aktif { box-shadow: 0 0 0 3px #c0392b, 0 5px 15px rgba(0,0,0,0.5) !important; }
+
+        /* -- GAYA KOMPONEN KANVAS -- */
+        .elemen-kotak { width: 100px; height: 100px; background: #45a29e; position: absolute; border: 2px solid #66fcf1; border-radius: 0px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); resize: both; overflow: hidden; }
+        .elemen-teks { position: absolute; color: #ffffff; font-size: 24px; padding: 5px 10px; border: 1px dashed transparent; min-width: 50px; }
+        .elemen-teks:hover { cursor: grab; border: 1px dashed #66fcf1; }
+        .elemen-gambar { position: absolute; width: 150px; height: 100px; background-color: #2c3e50; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
         
-        /* -- DESAIN KOMPONEN KANVAS -- */
-        .elemen-kotak { 
-            width: 100px; height: 100px; background: #45a29e; position: absolute; 
-            border: 2px solid #66fcf1; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-        }
+        .elemen-video { position: absolute; width: 250px; height: 150px; background-color: #000; border: 2px solid #f39c12; display: flex; justify-content: center; align-items: center; color: #fff; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
+        .elemen-video iframe { width: 100%; height: 100%; border: none; pointer-events: none; /* Cegah klik saat edit */ }
+        
+        /* Komponen Audio Baru */
+        .elemen-audio { position: absolute; width: 280px; height: 60px; background-color: #1f2833; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; border-radius: 30px; resize: horizontal; overflow: hidden; }
+        .elemen-audio audio { width: 95%; height: 40px; outline: none; pointer-events: none; /* Cegah klik saat edit */ }
+        .placeholder-media { position: absolute; font-size: 12px; color: #66fcf1; pointer-events: none; }
 
-        .elemen-teks {
-            position: absolute; color: #ffffff; font-size: 24px;
-            padding: 5px 10px; border: 1px dashed transparent; min-width: 50px;
-        }
-        .elemen-teks:hover { border: 1px dashed #66fcf1; cursor: grab; }
-        .elemen-teks:focus { border: 1px solid #66fcf1; outline: none; background: rgba(0,0,0,0.3); }
+        .elemen-tombol { position: absolute; background: #66fcf1; color: #0b0c10; padding: 10px 20px; border-radius: 20px; font-weight: bold; text-align: center; min-width: 80px; }
+        .elemen-rumus { position: absolute; color: #f39c12; font-size: 32px; padding: 10px 15px; min-width: 50px; background: rgba(243, 156, 18, 0.1); border-radius: 5px; cursor: grab; }
 
-        .elemen-gambar {
-            position: absolute; width: 150px; height: 100px;
-            background-color: #2c3e50; border: 2px solid #66fcf1; display: flex;
-            justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px;
-            font-size: 12px; user-select: none;
-        }
+        #notifikasi { position: fixed; bottom: 20px; left: 20px; background: #27ae60; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; z-index: 3000; }
 
-        .elemen-tombol {
-            position: absolute; background: #66fcf1; color: #0b0c10;
-            padding: 10px 20px; border-radius: 20px; font-weight: bold; border: 2px solid transparent;
-            min-width: 80px; text-align: center;
-        }
-        .elemen-tombol:hover { border: 2px solid #ffffff; cursor: grab; }
-        .elemen-tombol:focus { outline: none; background: #45a29e; color: white; }
-
-        .elemen-rumus {
-            position: absolute; color: #f39c12; font-size: 32px;
-            font-family: 'Times New Roman', Times, serif; font-style: italic; 
-            padding: 10px 15px; border: 1px dashed transparent; min-width: 80px;
-            background: rgba(243, 156, 18, 0.1); border-radius: 5px;
-        }
-        .elemen-rumus:hover { border: 1px dashed #f39c12; cursor: grab; }
-        .elemen-rumus:focus { border: 1px solid #f39c12; outline: none; background: rgba(243, 156, 18, 0.2); }
-
-        /* Notifikasi */
-        #notifikasi {
-            position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: white;
-            padding: 15px 25px; border-radius: 8px; font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; z-index: 100;
-        }
+        /* -- MODE PRATINJAU (PREVIEW) AJAIB -- */
+        .mode-pratinjau .teks-kanvas { display: none !important; }
+        .mode-pratinjau .komponen-aktif { box-shadow: none !important; }
+        .mode-pratinjau .elemen-kotak, .mode-pratinjau .elemen-gambar, .mode-pratinjau .elemen-video, .mode-pratinjau .elemen-audio { border: none !important; resize: none !important; }
+        .mode-pratinjau .elemen-teks:hover { border: 1px dashed transparent !important; cursor: default !important; }
+        .mode-pratinjau .elemen-rumus { background: transparent !important; cursor: default !important; }
+        /* Aktifkan kembali fungsi klik untuk video, audio, dan TOMBOL agar bisa berinteraksi */
+        .mode-pratinjau .elemen-video iframe, .mode-pratinjau .elemen-audio audio { pointer-events: auto !important; }
+        .mode-pratinjau .elemen-tombol { cursor: pointer !important; transition: 0.2s; }
+        .mode-pratinjau .elemen-tombol:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <button class="btn-aksi-panel" onclick="tutupPanel()">⬅ Tutup Panel</button>
-        
+    <div id="sidebar-kiri">
+        <button class="btn-aksi-panel" onclick="tutupPanelKiri()">⬅ Tutup Panel</button>
         <h2>🚀 Sirius Web</h2>
         
-        <div class="pembatas-menu">Dasar Universal</div>
+        <div class="pembatas-menu" style="margin-top: 0;">Dasar Universal</div>
         <div class="grup-tombol">
             <button class="btn" onclick="tambahKomponen('kotak')">+ Kotak</button>
             <button class="btn" onclick="tambahKomponen('teks')">+ Teks</button>
             <button class="btn" onclick="tambahKomponen('gambar')">+ Gambar</button>
+            <button class="btn" onclick="tambahKomponen('video')">+ Video</button>
+            <button class="btn" onclick="tambahKomponen('audio')">+ Musik</button> <!-- Baru -->
             <button class="btn" onclick="tambahKomponen('tombol')">+ Tombol</button>
         </div>
 
@@ -156,171 +174,310 @@
             <button class="btn-matematika" onclick="tambahKomponen('rumus')">+ Blok Rumus</button>
         </div>
 
-        <!-- Tombol Sistem di bagian bawah -->
+        <div class="pembatas-menu">Pengaturan Kanvas</div>
+        <div style="margin-bottom: 10px;">
+            <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Warna Latar:</label>
+            <input type="color" id="input-bg-kanvas" oninput="ubahLatarKanvas()" value="#0b0c10" style="width: 100%; height: 35px; padding: 0; border: none; border-radius: 5px; background: none; cursor: pointer;">
+        </div>
+        <div>
+            <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Gambar Latar (URL):</label>
+            <input type="text" id="input-bg-img-kanvas" placeholder="Link gambar..." oninput="ubahLatarKanvas()" style="width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; box-sizing: border-box; font-family: inherit; font-size: 12px;">
+        </div>
+
         <div class="area-sistem">
             <div class="pembatas-menu" style="margin-top: 0;">Sistem Penyimpanan</div>
             <div class="grup-tombol">
-                <button class="btn-sistem" onclick="simpanDesain()">💾 Simpan Desain</button>
+                <button class="btn-sistem" onclick="simpanManual()">💾 Simpan Desain</button>
                 <button class="btn-bahaya" onclick="bersihkanKanvas()">🗑 Bersihkan Kanvas</button>
             </div>
         </div>
     </div>
 
-    <div id="canvas">
-        <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanel()">☰ Buka Panel</button>
-        <div class="teks-kanvas" id="teks-kanvas-bg">Kanvas Kosong Alam Semesta</div>
+    <div id="canvas" onclick="klikAreaKosong(event)">
+        <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Buka Panel</button>
+        
+        <!-- Header Nama Website -->
+        <div id="nama-desain-container">
+            <input type="text" id="nama-desain" placeholder="Nama Website Anda..." oninput="simpanNamaDesain()">
+        </div>
+
+        <div id="status-simpan">✅ Tersimpan otomatis</div>
+        <div class="teks-kanvas">Ruang Kerja Inti</div>
+
+        <!-- Tombol Pratinjau Canggih -->
+        <button id="btn-pratinjau" onclick="togglePratinjau()">👁️ Pratinjau</button>
+
+        <!-- MENU MENGAMBANG -->
+        <div id="menu-mengambang">
+            <!-- Baris 1: Kontrol Umum & Alat -->
+            <div class="baris-kontrol">
+                <div class="kontrol-item" id="kontrol-warna">
+                    <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Ubah Warna">
+                    <input type="text" id="input-warna-hex" placeholder="#FFFFFF" oninput="ubahWarna('hex')" style="width: 70px;">
+                </div>
+                
+                <div class="kontrol-item" id="kontrol-teks" style="display: none;">
+                    <label>Ukuran:</label>
+                    <input type="number" id="input-ukuran-teks" oninput="ubahUkuranTeks()">
+                </div>
+                
+                <div class="kontrol-item" id="kontrol-bentuk" style="display: none;">
+                    <label>Bentuk:</label>
+                    <select id="input-bentuk" onchange="ubahBentuk()">
+                        <option value="0px">Persegi</option>
+                        <option value="15px">Lengkung</option>
+                        <option value="50%">Lingkaran</option>
+                    </select>
+                </div>
+                
+                <button class="btn-mini-aksi" onclick="duplikatKomponen()" title="Duplikat Komponen">📄</button>
+                <button class="btn-mini-aksi" onclick="pindahLapis(1)" title="Pindah ke Depan">🔼</button>
+                <button class="btn-mini-aksi" onclick="pindahLapis(-1)" title="Pindah ke Belakang">🔽</button>
+                <button class="btn-mini-aksi" id="btn-kunci" onclick="kunciKomponen()" title="Kunci/Buka Komponen">🔓</button>
+                <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
+            </div>
+
+            <!-- Baris 2: URL Gambar/Video/Audio/TOMBOL -->
+            <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%;">
+                <label id="label-url" style="width: 70px;">URL Link:</label>
+                <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
+            </div>
+
+            <!-- Baris 3: Editor Matematika (Format LaTeX) Lengkap -->
+            <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px;">
+                <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
+                <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
+                
+                <div class="grid-simbol">
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
+                    <!-- Template dengan Huruf Hijau (#2ecc71) sebagai Penanda -->
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{\\color{#2ecc71}{a}}{\\color{#2ecc71}{b}}')" title="Pecahan">a/b</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\color{#2ecc71}{x}^2')" title="Pangkat">x²</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sqrt{\\color{#2ecc71}{x}}')" title="Akar">√</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{\\color{#2ecc71}{a}}^{\\color{#2ecc71}{b}}')" title="Integral">∫</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{\\color{#2ecc71}{i}=1}^{\\color{#2ecc71}{n}}')" title="Sigma">∑</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{\\color{#2ecc71}{x} \\to \\infty}')" title="Limit">lim</button>
+                    
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} \\color{#2ecc71}{a} & \\color{#2ecc71}{b} & \\color{#2ecc71}{c} \\\\ \\color{#2ecc71}{d} & \\color{#2ecc71}{e} & \\color{#2ecc71}{f} \\\\ \\color{#2ecc71}{g} & \\color{#2ecc71}{h} & \\color{#2ecc71}{i} \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} \\color{#2ecc71}{x} \\\\ \\color{#2ecc71}{y} \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
+
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\beta')" title="Beta">β</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pi')" title="Pi">π</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\infty')" title="Tak Terhingga">∞</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\approx')" title="Kira-kira">≈</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\neq')" title="Tidak Sama">≠</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\leq')" title="Kurang Dari Sama">≤</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\geq')" title="Lebih Dari Sama">≥</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pm')" title="Plus Minus">±</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Elemen Notifikasi -->
     <div id="notifikasi">Desain berhasil disimpan!</div>
 
     <script>
-        // Saat halaman pertama kali dimuat, coba pulihkan desain yang tersimpan
+        // --- INISIALISASI ---
+        let dataDesainTerakhir = "";
+        let komponenTerpilih = null;
+        let modePratinjau = false; // Mode ajaib
+        let timerKeyboard; // Timer untuk delay menu saat digeser panah
+
         window.onload = function() {
             muatDesain();
+            setInterval(simpanDiamDiam, 1000); 
         };
 
-        function tutupPanel() {
-            document.getElementById('sidebar').classList.add('sidebar-tersembunyi');
-            document.getElementById('btn-buka-panel').style.display = 'block';
+        // --- SISTEM NAMA DESAIN ---
+        function simpanNamaDesain() {
+            let nama = document.getElementById('nama-desain').value;
+            localStorage.setItem('SiriusWebProjectName', nama);
+            simpanDiamDiam(); // Pancing indikator simpan
         }
 
-        function bukaPanel() {
-            document.getElementById('sidebar').classList.remove('sidebar-tersembunyi');
+        // --- SISTEM MODE PRATINJAU ---
+        function togglePratinjau() {
+            modePratinjau = !modePratinjau;
+            let canvas = document.getElementById('canvas');
+            let sidebar = document.getElementById('sidebar-kiri');
+            let btnBuka = document.getElementById('btn-buka-panel');
+            let namaDesain = document.getElementById('nama-desain-container');
+            let btnPreview = document.getElementById('btn-pratinjau');
+
+            if (modePratinjau) {
+                // Aktifkan Mode Final (Bersih)
+                tutupMenuMengambang();
+                sidebar.classList.add('sidebar-tersembunyi');
+                btnBuka.style.display = 'none';
+                namaDesain.style.display = 'none';
+                document.getElementById('status-simpan').style.display = 'none';
+                
+                if(komponenTerpilih) komponenTerpilih.classList.remove('komponen-aktif');
+                canvas.classList.add('mode-pratinjau');
+                
+                btnPreview.innerText = '✏️ Keluar Pratinjau';
+                btnPreview.style.background = '#e74c3c';
+            } else {
+                // Kembali ke Mode Editor
+                btnBuka.style.display = 'block';
+                namaDesain.style.display = 'flex';
+                document.getElementById('status-simpan').style.display = 'block';
+                
+                canvas.classList.remove('mode-pratinjau');
+                btnPreview.innerText = '👁️ Pratinjau';
+                btnPreview.style.background = '#f39c12';
+            }
+        }
+
+        function tutupPanelKiri() {
+            document.getElementById('sidebar-kiri').classList.add('sidebar-tersembunyi');
+            document.getElementById('btn-buka-panel').style.display = 'block';
+        }
+        function bukaPanelKiri() {
+            document.getElementById('sidebar-kiri').classList.remove('sidebar-tersembunyi');
             document.getElementById('btn-buka-panel').style.display = 'none';
         }
 
-        // Fungsi Induk untuk menambah komponen (lebih rapi)
-        function tambahKomponen(jenis, posisiKustom = null, isiTeksKustom = null) {
+        // --- SISTEM PEMBUATAN KOMPONEN ---
+        // Tambahan parameter fontFamilyKustom
+        function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null) {
             let elemenBaru = document.createElement('div');
             
-            // Set posisi awal di tengah layar jika tidak ada posisi kustom
-            let defaultTop = '150px';
-            let defaultLeft = '350px';
-
-            if (posisiKustom) {
-                defaultTop = posisiKustom.top;
-                defaultLeft = posisiKustom.left;
-            }
-            
+            let defaultTop = posisiKustom ? posisiKustom.top : '150px';
+            let defaultLeft = posisiKustom ? posisiKustom.left : '350px';
             elemenBaru.style.top = defaultTop;
             elemenBaru.style.left = defaultLeft;
+            elemenBaru.style.zIndex = zIndexKustom;
+            elemenBaru.dataset.terkunci = terkunciKustom;
+            if (urlKustom) elemenBaru.dataset.url = urlKustom;
+            if (terkunciKustom === 'true') elemenBaru.classList.add('komponen-terkunci');
 
-            // Atur atribut berdasarkan jenis
+            if (lebarKustom) elemenBaru.style.width = lebarKustom;
+            if (tinggiKustom) elemenBaru.style.height = tinggiKustom;
+            if (radiusKustom) elemenBaru.style.borderRadius = radiusKustom;
+            // Terapkan font kustom jika ada
+            if (fontFamilyKustom) elemenBaru.style.fontFamily = fontFamilyKustom;
+
             switch(jenis) {
                 case 'kotak':
                     elemenBaru.className = 'elemen-kotak';
-                    elemenBaru.dataset.jenis = 'kotak'; // Tanda pengenal untuk penyimpanan
+                    elemenBaru.dataset.jenis = 'kotak';
+                    if (warnaKustom) elemenBaru.style.backgroundColor = warnaKustom;
                     break;
                 case 'teks':
                     elemenBaru.className = 'elemen-teks';
-                    elemenBaru.innerText = isiTeksKustom || "Ketik teks di sini...";
+                    elemenBaru.innerText = isiKustom || "Ketik teks...";
                     elemenBaru.contentEditable = "true"; 
                     elemenBaru.dataset.jenis = 'teks';
+                    if (warnaKustom) elemenBaru.style.color = warnaKustom;
+                    if (ukuranKustom) elemenBaru.style.fontSize = ukuranKustom;
                     break;
                 case 'gambar':
                     elemenBaru.className = 'elemen-gambar';
-                    elemenBaru.innerText = isiTeksKustom || "Area Gambar"; 
+                    elemenBaru.innerText = isiKustom || "Area Gambar"; 
                     elemenBaru.dataset.jenis = 'gambar';
+                    if (bgKustom && bgKustom !== "none") {
+                        elemenBaru.style.backgroundImage = bgKustom;
+                        elemenBaru.style.backgroundSize = "cover";
+                        elemenBaru.style.backgroundPosition = "center";
+                        elemenBaru.innerText = "";
+                    }
+                    break;
+                case 'video':
+                    elemenBaru.className = 'elemen-video';
+                    elemenBaru.dataset.jenis = 'video';
+                    if (bgKustom && bgKustom !== "none") {
+                        let embedUrl = bgKustom.includes('watch?v=') ? bgKustom.replace('watch?v=', 'embed/') : bgKustom;
+                        elemenBaru.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+                    } else {
+                        elemenBaru.innerHTML = `<div class="placeholder-media">Area Video</div>`;
+                    }
+                    break;
+                case 'audio': // KOMPONEN BARU
+                    elemenBaru.className = 'elemen-audio';
+                    elemenBaru.dataset.jenis = 'audio';
+                    if (bgKustom && bgKustom !== "none") {
+                        elemenBaru.innerHTML = `<audio src="${bgKustom}" controls></audio>`;
+                    } else {
+                        elemenBaru.innerHTML = `<div class="placeholder-media">🎵 Area Musik</div><audio controls style="display:none;"></audio>`;
+                    }
                     break;
                 case 'tombol':
                     elemenBaru.className = 'elemen-tombol';
-                    elemenBaru.innerText = isiTeksKustom || "Klik Di Sini";
+                    elemenBaru.innerText = isiKustom || "Klik";
                     elemenBaru.contentEditable = "true"; 
                     elemenBaru.dataset.jenis = 'tombol';
+                    if (warnaKustom) elemenBaru.style.backgroundColor = warnaKustom;
                     break;
                 case 'rumus':
                     elemenBaru.className = 'elemen-rumus';
-                    elemenBaru.innerText = isiTeksKustom || "E = mc²";
-                    elemenBaru.contentEditable = "true"; 
                     elemenBaru.dataset.jenis = 'rumus';
+                    elemenBaru.dataset.latex = latexKustom || "E = mc^2"; 
+                    if (warnaKustom) elemenBaru.style.color = warnaKustom;
+                    if (ukuranKustom) elemenBaru.style.fontSize = ukuranKustom;
+                    
+                    if (typeof katex !== 'undefined') {
+                        katex.render(elemenBaru.dataset.latex, elemenBaru, { throwOnError: false });
+                    } else {
+                        elemenBaru.innerText = elemenBaru.dataset.latex;
+                    }
                     break;
             }
 
+            if (elemenBaru.contentEditable === "true") {
+                elemenBaru.onkeyup = function() { simpanDiamDiam(); };
+            }
+
             document.getElementById('canvas').appendChild(elemenBaru);
-            buatBisaDigeser(elemenBaru);
+            buatBisaDigeserDanDiklik(elemenBaru);
             
-            elemenBaru.ondblclick = function() {
+            elemenBaru.ondblclick = function(e) {
+                if (modePratinjau) return; // Cegah hapus di mode preview
+                e.stopPropagation();
+                if(komponenTerpilih === elemenBaru) tutupMenuMengambang();
                 elemenBaru.remove();
+                simpanDiamDiam();
             };
-        }
-
-        // --- SISTEM PENYIMPANAN (BRANKAS) ---
-        
-        function simpanDesain() {
-            let kanvas = document.getElementById('canvas');
-            let semuaKomponen = kanvas.children;
-            let dataDesain = [];
-
-            // Kumpulkan data setiap komponen yang ada di kanvas
-            for (let i = 0; i < semuaKomponen.length; i++) {
-                let elemen = semuaKomponen[i];
-                
-                // Pastikan yang disimpan hanya elemen komponen kita, bukan teks background atau tombol buka panel
-                if (elemen.dataset.jenis) {
-                    dataDesain.push({
-                        jenis: elemen.dataset.jenis,
-                        top: elemen.style.top,
-                        left: elemen.style.left,
-                        isi: elemen.innerText
-                    });
-                }
-            }
-
-            // Ubah data menjadi teks dan simpan ke Local Storage browser
-            localStorage.setItem('SiriusWebSaveData', JSON.stringify(dataDesain));
             
-            tampilkanNotifikasi("Desain berhasil disimpan ke brankas!");
+            simpanDiamDiam(); 
         }
 
-        function muatDesain() {
-            let dataTersimpan = localStorage.getItem('SiriusWebSaveData');
-            
-            if (dataTersimpan) {
-                // Ubah teks kembali menjadi data terstruktur
-                let dataDesain = JSON.parse(dataTersimpan);
-                
-                // Buat ulang elemennya satu per satu di posisi yang sama
-                dataDesain.forEach(item => {
-                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi);
-                });
-            }
-        }
-
-        function bersihkanKanvas() {
-            if(confirm("Yakin ingin menghapus semua elemen dari kanvas?")) {
-                let kanvas = document.getElementById('canvas');
-                let semuaKomponen = kanvas.querySelectorAll('[data-jenis]'); // Pilih hanya komponen kita
-                
-                semuaKomponen.forEach(elemen => {
-                    elemen.remove();
-                });
-                
-                // Hapus data simpanan juga
-                localStorage.removeItem('SiriusWebSaveData');
-            }
-        }
-
-        function tampilkanNotifikasi(pesan) {
-            let notif = document.getElementById('notifikasi');
-            notif.innerText = pesan;
-            notif.style.display = 'block';
-            
-            setTimeout(() => {
-                notif.style.display = 'none';
-            }, 3000); // Hilang setelah 3 detik
-        }
-
-        // --- MESIN UTAMA DRAG & DROP ---
-        function buatBisaDigeser(elemen) {
+        // --- SISTEM DRAG & INTERAKSI PINTAR ---
+        function buatBisaDigeserDanDiklik(elemen) {
             let titikXAwal = 0, titikYAwal = 0, posisiX = 0, posisiY = 0;
+            let sedangDigeser = false;
 
             elemen.onmousedown = function(e) {
-                if (document.activeElement === elemen) return; 
+                if (modePratinjau) {
+                    // Fungsi Link Tombol Aktif Saat Pratinjau
+                    if (elemen.className.includes('elemen-tombol') && elemen.dataset.url) {
+                        let link = elemen.dataset.url;
+                        if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                            link = 'https://' + link; // Pastikan link tidak error
+                        }
+                        window.open(link, '_blank'); // Buka link di tab baru
+                    }
+                    return; 
+                }
+
+                e.stopPropagation(); 
+                pilihKomponen(elemen);
+
+                if (elemen.contentEditable === "true" && document.activeElement === elemen) return; 
+                if (elemen.dataset.terkunci === 'true') return;
+
+                let rect = elemen.getBoundingClientRect();
+                let isResizeArea = (e.clientX > rect.right - 20) && (e.clientY > rect.bottom - 20);
+                if ((elemen.className.includes('kotak') || elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio')) && isResizeArea) {
+                    return; 
+                }
 
                 e.preventDefault();
                 titikXAwal = e.clientX;
                 titikYAwal = e.clientY;
+                sedangDigeser = false;
                 
                 document.onmousemove = geserElemen;
                 document.onmouseup = hentikanGeser;
@@ -328,6 +485,7 @@
 
             function geserElemen(e) {
                 e.preventDefault();
+                sedangDigeser = true; 
                 posisiX = titikXAwal - e.clientX;
                 posisiY = titikYAwal - e.clientY;
                 titikXAwal = e.clientX;
@@ -335,14 +493,460 @@
                 
                 elemen.style.top = (elemen.offsetTop - posisiY) + "px";
                 elemen.style.left = (elemen.offsetLeft - posisiX) + "px";
+
+                // Sembunyikan menu melayang secara instan saat sedang digeser
+                document.getElementById('menu-mengambang').style.opacity = '0';
+                document.getElementById('menu-mengambang').style.pointerEvents = 'none';
             }
 
-            function hentikanGeser() {
+            function hentikanGeser(e) {
                 document.onmouseup = null;
                 document.onmousemove = null;
+                
+                if (!sedangDigeser && elemen.contentEditable === "true") {
+                    elemen.focus();
+                }
+                if (sedangDigeser) {
+                    simpanDiamDiam();
+                    // Tampilkan kembali menu di koordinat yang baru
+                    if (komponenTerpilih === elemen) {
+                        posisikanMenu(elemen);
+                        document.getElementById('menu-mengambang').style.opacity = '1';
+                        document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
+                    }
+                }
+            }
+        }
+
+        // --- SISTEM MENU MENGAMBANG ---
+        function rgbKeHex(rgb) {
+            if(!rgb || rgb === 'none' || rgb === 'transparent') return '#ffffff';
+            let a = rgb.split("(")[1].split(")")[0];
+            a = a.split(",");
+            let b = a.map(function(x) {             
+                x = parseInt(x).toString(16);
+                return (x.length==1) ? "0"+x : x;
+            });
+            return "#" + b.join("");
+        }
+
+        function pilihKomponen(elemen) {
+            if (komponenTerpilih) {
+                komponenTerpilih.classList.remove('komponen-aktif');
+            }
+
+            komponenTerpilih = elemen;
+            komponenTerpilih.classList.add('komponen-aktif');
+
+            let menu = document.getElementById('menu-mengambang');
+            menu.style.opacity = '1';
+            menu.style.pointerEvents = 'auto';
+
+            let btnKunci = document.getElementById('btn-kunci');
+            if (elemen.dataset.terkunci === 'true') {
+                btnKunci.innerText = '🔒';
+            } else {
+                btnKunci.innerText = '🔓';
+            }
+
+            document.getElementById('kontrol-teks').style.display = 'none';
+            document.getElementById('kontrol-font').style.display = 'none'; // Sembunyikan kontrol font awalnya
+            document.getElementById('kontrol-gambar').style.display = 'none';
+            document.getElementById('kontrol-bentuk').style.display = 'none';
+            document.getElementById('kontrol-rumus').style.display = 'none';
+
+            let warnaElemen = window.getComputedStyle(elemen).color;
+            if (elemen.className.includes('kotak') || elemen.className.includes('tombol') || elemen.className.includes('audio')) {
+                warnaElemen = window.getComputedStyle(elemen).backgroundColor;
+            }
+            let warnaHex = warnaElemen.includes('rgb') ? rgbKeHex(warnaElemen) : warnaElemen;
+            document.getElementById('input-warna').value = warnaHex;
+            document.getElementById('input-warna-hex').value = warnaHex;
+
+            if (elemen.className.includes('teks') || elemen.className.includes('tombol') || elemen.className.includes('rumus')) {
+                document.getElementById('kontrol-teks').style.display = 'flex';
+                let fontSaatIni = window.getComputedStyle(elemen).fontSize;
+                document.getElementById('input-ukuran-teks').value = parseInt(fontSaatIni);
+                
+                // Jika itu Teks atau Tombol, tampilkan juga pemilih Font
+                if (elemen.className.includes('teks') || elemen.className.includes('tombol')) {
+                     document.getElementById('kontrol-font').style.display = 'flex';
+                     // Sinkronkan pemilih font dengan font elemen saat ini
+                     let familySaatIni = window.getComputedStyle(elemen).fontFamily;
+                     // Logika sederhana untuk mencocokkan font
+                     if (familySaatIni.includes('Times')) document.getElementById('input-font').value = "'Times New Roman', serif";
+                     else if (familySaatIni.includes('Courier')) document.getElementById('input-font').value = "'Courier New', monospace";
+                     else if (familySaatIni.includes('Verdana')) document.getElementById('input-font').value = "Verdana, sans-serif";
+                     else if (familySaatIni.includes('Comic')) document.getElementById('input-font').value = "'Comic Sans MS', cursive";
+                     else document.getElementById('input-font').value = "Arial, sans-serif";
+                }
+            } 
+            if (elemen.className.includes('kotak')) {
+                document.getElementById('kontrol-bentuk').style.display = 'flex';
+                let radiusSaatIni = window.getComputedStyle(elemen).borderRadius;
+                if (radiusSaatIni === '50%') document.getElementById('input-bentuk').value = '50%';
+                else if (radiusSaatIni === '0px') document.getElementById('input-bentuk').value = '0px';
+                else document.getElementById('input-bentuk').value = '15px';
+            }
+            if (elemen.className.includes('rumus')) {
+                document.getElementById('kontrol-rumus').style.display = 'flex';
+                document.getElementById('input-latex').value = elemen.dataset.latex || "";
+            }
+
+            posisikanMenu(elemen);
+            menu.style.display = 'flex';
+        }
+
+        function posisikanMenu(elemen) {
+            let menu = document.getElementById('menu-mengambang');
+            let tinggiMenu = menu.offsetHeight || 60;
+            menu.style.top = (elemen.offsetTop - tinggiMenu - 15) + "px"; 
+            menu.style.left = elemen.offsetLeft + "px";
+        }
+
+        function ubahWarna(sumber) {
+            if (!komponenTerpilih) return;
+            let warnaBaru = "";
+            if (sumber === 'picker') {
+                warnaBaru = document.getElementById('input-warna').value;
+                document.getElementById('input-warna-hex').value = warnaBaru;
+            } else {
+                warnaBaru = document.getElementById('input-warna-hex').value;
+                if(warnaBaru.startsWith('#') && (warnaBaru.length === 4 || warnaBaru.length === 7)) {
+                    document.getElementById('input-warna').value = warnaBaru;
+                }
+            }
+
+            if (komponenTerpilih.className.includes('teks') || komponenTerpilih.className.includes('rumus')) {
+                komponenTerpilih.style.color = warnaBaru;
+            } else {
+                komponenTerpilih.style.backgroundColor = warnaBaru;
+            }
+            simpanDiamDiam();
+        }
+
+        function ubahRumus() {
+            if (!komponenTerpilih || komponenTerpilih.dataset.jenis !== 'rumus') return;
+            let teksLatex = document.getElementById('input-latex').value;
+            komponenTerpilih.dataset.latex = teksLatex; 
+            
+            try {
+                katex.render(teksLatex, komponenTerpilih, { throwOnError: false });
+            } catch(e) {
+                komponenTerpilih.innerText = "Format Salah";
+            }
+            simpanDiamDiam();
+            posisikanMenu(komponenTerpilih); 
+        }
+
+        function sisipkanSimbol(simbol) {
+            let textarea = document.getElementById('input-latex');
+            textarea.value += " " + simbol + " ";
+            ubahRumus();
+            textarea.focus();
+        }
+
+        function ubahUkuranTeks() {
+            if (!komponenTerpilih) return;
+            let ukuranBaru = document.getElementById('input-ukuran-teks').value;
+            komponenTerpilih.style.fontSize = ukuranBaru + "px";
+            simpanDiamDiam();
+            posisikanMenu(komponenTerpilih); 
+        }
+
+        // FITUR BARU: Fungsi untuk mengubah font (jenis tulisan)
+        function ubahFont() {
+            if (!komponenTerpilih) return;
+            let fontBaru = document.getElementById('input-font').value;
+            komponenTerpilih.style.fontFamily = fontBaru;
+            simpanDiamDiam();
+            posisikanMenu(komponenTerpilih);
+        }
+
+        // Penggabungan Perubahan URL Gambar/Video/Audio/TOMBOL
+        function ubahMedia() {
+            if (!komponenTerpilih) return;
+            let urlBaru = document.getElementById('input-url-gambar').value;
+            
+            if (komponenTerpilih.className.includes('tombol')) {
+                komponenTerpilih.dataset.url = urlBaru; // Simpan link ke tombol
+            } else if (komponenTerpilih.className.includes('video')) {
+                if (urlBaru) {
+                    let embedUrl = urlBaru.includes('watch?v=') ? urlBaru.replace('watch?v=', 'embed/') : urlBaru;
+                    komponenTerpilih.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+                } else {
+                    komponenTerpilih.innerHTML = `<div class="placeholder-media">Area Video</div>`;
+                }
+            } else if (komponenTerpilih.className.includes('audio')) {
+                if (urlBaru) {
+                    komponenTerpilih.innerHTML = `<audio src="${urlBaru}" controls style="width: 95%; height: 40px;"></audio>`;
+                } else {
+                    komponenTerpilih.innerHTML = `<div class="placeholder-media">🎵 Area Musik</div><audio controls style="display:none;"></audio>`;
+                }
+            } else {
+                if (urlBaru) {
+                    komponenTerpilih.style.backgroundImage = "url('" + urlBaru + "')";
+                    komponenTerpilih.style.backgroundSize = "cover";
+                    komponenTerpilih.style.backgroundPosition = "center";
+                    komponenTerpilih.innerText = ""; 
+                } else {
+                    komponenTerpilih.style.backgroundImage = "none";
+                    komponenTerpilih.innerText = "Area Gambar";
+                }
+            }
+            simpanDiamDiam();
+        }
+
+        function ubahBentuk() {
+            if (!komponenTerpilih) return;
+            let radiusBaru = document.getElementById('input-bentuk').value;
+            komponenTerpilih.style.borderRadius = radiusBaru;
+            simpanDiamDiam();
+        }
+
+        function duplikatKomponen() {
+            if (!komponenTerpilih) return;
+            
+            let bgData = komponenTerpilih.style.backgroundImage;
+            if (komponenTerpilih.dataset.jenis === 'video') {
+                let iframe = komponenTerpilih.querySelector('iframe');
+                bgData = iframe ? iframe.src : "";
+            } else if (komponenTerpilih.dataset.jenis === 'audio') {
+                let audio = komponenTerpilih.querySelector('audio');
+                bgData = audio ? audio.src : "";
+            }
+
+            let data = {
+                jenis: komponenTerpilih.dataset.jenis,
+                top: (parseInt(komponenTerpilih.style.top || 0) + 20) + 'px',
+                left: (parseInt(komponenTerpilih.style.left || 0) + 20) + 'px',
+                isi: komponenTerpilih.innerText,
+                warna: komponenTerpilih.style.color || komponenTerpilih.style.backgroundColor,
+                ukuran: komponenTerpilih.style.fontSize,
+                bg: bgData,
+                lebar: window.getComputedStyle(komponenTerpilih).width,
+                tinggi: window.getComputedStyle(komponenTerpilih).height,
+                radius: window.getComputedStyle(komponenTerpilih).borderRadius,
+                zindex: parseInt(komponenTerpilih.style.zIndex || 1) + 1,
+                latex: komponenTerpilih.dataset.latex,
+                terkunci: 'false',
+                url: komponenTerpilih.dataset.url || "",
+                fontFamily: window.getComputedStyle(komponenTerpilih).fontFamily // Ambil font saat duplikat
+            };
+            
+            tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily);
+        }
+
+        function pindahLapis(arah) {
+            if (!komponenTerpilih) return;
+            let lapisSekarang = parseInt(komponenTerpilih.style.zIndex || 1);
+            let lapisBaru = lapisSekarang + arah;
+            if (lapisBaru < 1) lapisBaru = 1;
+            
+            komponenTerpilih.style.zIndex = lapisBaru;
+            simpanDiamDiam();
+        }
+
+        function kunciKomponen() {
+            if (!komponenTerpilih) return;
+            if (komponenTerpilih.dataset.terkunci === 'true') {
+                komponenTerpilih.dataset.terkunci = 'false';
+                komponenTerpilih.classList.remove('komponen-terkunci');
+                document.getElementById('btn-kunci').innerText = '🔓';
+            } else {
+                komponenTerpilih.dataset.terkunci = 'true';
+                komponenTerpilih.classList.add('komponen-terkunci');
+                document.getElementById('btn-kunci').innerText = '🔒';
+            }
+            simpanDiamDiam();
+        }
+
+        // --- Kontrol Keyboard (Perbaikan Cilukba Menu) ---
+        document.addEventListener('keydown', function(e) {
+            if (modePratinjau) return;
+            const activeEl = document.activeElement;
+            if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable) return;
+
+            if (komponenTerpilih) {
+                if (e.key === 'Delete') {
+                    hapusKomponenAktif();
+                    return;
+                }
+                
+                if (komponenTerpilih.dataset.terkunci === 'true' && e.key.includes('Arrow')) return;
+
+                let step = e.shiftKey ? 10 : 1; 
+                let top = parseInt(komponenTerpilih.style.top || 0);
+                let left = parseInt(komponenTerpilih.style.left || 0);
+                let moved = false;
+
+                if (e.key === 'ArrowUp') { top -= step; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowDown') { top += step; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowLeft') { left -= step; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowRight') { left += step; moved = true; e.preventDefault(); }
+
+                if (moved) {
+                    komponenTerpilih.style.top = top + 'px';
+                    komponenTerpilih.style.left = left + 'px';
+                    
+                    // Sembunyikan menu secara instan selama jari memencet panah
+                    document.getElementById('menu-mengambang').style.opacity = '0';
+                    document.getElementById('menu-mengambang').style.pointerEvents = 'none';
+                }
+            }
+        });
+
+        // Deteksi jari dilepas dari keyboard untuk memunculkan menu lagi
+        document.addEventListener('keyup', function(e) {
+            if (modePratinjau) return;
+            if (komponenTerpilih && e.key.includes('Arrow')) {
+                clearTimeout(timerKeyboard);
+                simpanDiamDiam(); // Simpan koordinat baru
+                timerKeyboard = setTimeout(() => {
+                    posisikanMenu(komponenTerpilih);
+                    document.getElementById('menu-mengambang').style.opacity = '1';
+                    document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
+                }, 200); // Menu muncul halus setelah berhenti pencet selama 0.2 detik
+            }
+        });
+
+        function tutupMenuMengambang() {
+            if (komponenTerpilih) {
+                komponenTerpilih.classList.remove('komponen-aktif');
+                komponenTerpilih = null;
+            }
+            document.getElementById('menu-mengambang').style.display = 'none';
+        }
+
+        function hapusKomponenAktif() {
+            if (komponenTerpilih) {
+                komponenTerpilih.remove();
+                tutupMenuMengambang();
+                simpanDiamDiam();
+            }
+        }
+
+        function klikAreaKosong(e) {
+            if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container')) return;
+            if (e.target.id === 'canvas' || e.target.className === 'teks-kanvas') {
+                tutupMenuMengambang();
+            }
+        }
+
+        // --- SISTEM PENYIMPANAN LOKAL (BRANKAS) ---
+        function simpanManual() {
+            simpanDiamDiam(true); 
+            let notif = document.getElementById('notifikasi');
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+        }
+
+        function simpanDiamDiam(paksaSimpan = false) {
+            let kanvas = document.getElementById('canvas');
+            let semuaKomponen = kanvas.children;
+            let dataDesain = [];
+
+            for (let i = 0; i < semuaKomponen.length; i++) {
+                let elemen = semuaKomponen[i];
+                if (elemen.dataset.jenis) {
+                    let bgData = elemen.style.backgroundImage;
+                    if (elemen.dataset.jenis === 'video') {
+                        let iframe = elemen.querySelector('iframe');
+                        bgData = iframe ? iframe.src : "";
+                    } else if (elemen.dataset.jenis === 'audio') {
+                        let audio = elemen.querySelector('audio');
+                        bgData = audio ? audio.src : "";
+                    }
+
+                    dataDesain.push({
+                        jenis: elemen.dataset.jenis,
+                        top: elemen.style.top,
+                        left: elemen.style.left,
+                        isi: elemen.innerText,
+                        warna: elemen.style.color || elemen.style.backgroundColor,
+                        ukuran: elemen.style.fontSize,
+                        bg: bgData,
+                        lebar: elemen.style.width,
+                        tinggi: elemen.style.height,
+                        radius: elemen.style.borderRadius,
+                        zindex: elemen.style.zIndex || 1,
+                        latex: elemen.dataset.latex,
+                        terkunci: elemen.dataset.terkunci || 'false',
+                        url: elemen.dataset.url || "",
+                        fontFamily: elemen.style.fontFamily // Simpan data font
+                    });
+                }
+            }
+
+            let dataString = JSON.stringify(dataDesain);
+
+            if (dataString !== dataDesainTerakhir || paksaSimpan) {
+                let status = document.getElementById('status-simpan');
+                status.innerText = "⏳ Menyimpan...";
+                status.style.color = "#f39c12"; 
+
+                localStorage.setItem('SiriusWebSaveData', dataString);
+                dataDesainTerakhir = dataString;
+
+                setTimeout(() => {
+                    status.innerText = "✅ Tersimpan otomatis";
+                    status.style.color = "#27ae60";
+                }, 500);
+            }
+        }
+
+        function muatDesain() {
+            let savedName = localStorage.getItem('SiriusWebProjectName');
+            if (savedName) document.getElementById('nama-desain').value = savedName;
+
+            let bgInputs = localStorage.getItem('SiriusWebBgInputs');
+            if (bgInputs) {
+                let bg = JSON.parse(bgInputs);
+                document.getElementById('input-bg-kanvas').value = bg.warna || "#0b0c10";
+                document.getElementById('input-bg-img-kanvas').value = bg.gambar || "";
+                ubahLatarKanvas(); 
+            }
+
+            let dataTersimpan = localStorage.getItem('SiriusWebSaveData');
+            if (dataTersimpan) {
+                let dataDesain = JSON.parse(dataTersimpan);
+                dataDesain.forEach(item => {
+                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily);
+                });
+            }
+        }
+
+        function ubahLatarKanvas() {
+            let warna = document.getElementById('input-bg-kanvas').value;
+            let urlImg = document.getElementById('input-bg-img-kanvas').value;
+            let kanvas = document.getElementById('canvas');
+
+            kanvas.style.backgroundColor = warna;
+            if (urlImg) {
+                kanvas.style.backgroundImage = `url('${urlImg}')`;
+                kanvas.style.backgroundSize = "cover";
+                kanvas.style.backgroundPosition = "center";
+            } else {
+                kanvas.style.backgroundImage = "none";
+            }
+            
+            localStorage.setItem('SiriusWebBgInputs', JSON.stringify({ warna: warna, gambar: urlImg }));
+        }
+
+        function bersihkanKanvas() {
+            if(confirm("Yakin ingin menghapus semua elemen dari kanvas?")) {
+                let kanvas = document.getElementById('canvas');
+                let semuaKomponen = kanvas.querySelectorAll('[data-jenis]'); 
+                
+                semuaKomponen.forEach(elemen => {
+                    elemen.remove();
+                });
+                
+                localStorage.removeItem('SiriusWebSaveData');
+                simpanDiamDiam(true);
+                tutupMenuMengambang();
             }
         }
     </script>
-
 </body>
 </html>
