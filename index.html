@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sirius Web Builder - Editor</title>
 
-    <!-- Library KaTeX untuk Rumus Matematika -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
@@ -19,8 +18,8 @@
         #sidebar-kiri { 
             width: 250px; background: #1f2833; padding: 20px; 
             border-right: 2px solid #66fcf1; box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-            z-index: 1000; transition: margin-left 0.4s ease; overflow-y: auto; 
-            display: flex; flex-direction: column;
+            z-index: 2000; transition: margin-left 0.4s ease; overflow-y: auto; 
+            display: flex; flex-direction: column; flex-shrink: 0;
         }
         .sidebar-tersembunyi { margin-left: -300px; }
         #sidebar-kiri h2 { color: #66fcf1; margin-top: 0; margin-bottom: 5px;}
@@ -32,15 +31,17 @@
         }
         .btn-aksi-panel:hover { background: #66fcf1; color: #0b0c10; }
         
+        /* -- PEMBUNGKUS KANVAS (Agar UI tidak ikut tergulung) -- */
+        #kanvas-wrapper {
+            flex-grow: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; background-color: #0b0c10;
+        }
+
+        /* UI TETAP (Fixed UI) */
         #btn-buka-panel {
             position: absolute; top: 20px; left: 20px; background: #1f2833;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: auto; z-index: 1000; display: none;
         }
 
-        /* -- AREA KANVAS -- */
-        #canvas { flex-grow: 1; position: relative; overflow: hidden; transition: 0.3s; }
-        
-        /* Nama Desain & Status Simpan */
         #nama-desain-container {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: rgba(31, 40, 51, 0.8); padding: 8px 20px; border-radius: 30px;
@@ -59,22 +60,32 @@
             font-weight: bold; z-index: 1000; transition: all 0.3s ease;
         }
         
-        /* Tombol Mode Pratinjau Spesial */
         #btn-pratinjau {
             position: absolute; bottom: 30px; right: 30px; background: #f39c12; color: #fff;
             border: none; padding: 15px 25px; border-radius: 30px; font-weight: bold; font-size: 16px;
-            cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s;
+            cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.3s;
         }
         #btn-pratinjau:hover { background: #e67e22; transform: scale(1.05); }
 
-        .teks-kanvas { color: #66fcf1; opacity: 0.1; text-align: center; margin-top: 20%; font-size: 2em; user-select: none; z-index: 0; }
+        /* -- AREA KANVAS (Yang Bisa Di-Scroll) -- */
+        #canvas { 
+            flex-grow: 1; overflow-y: auto; overflow-x: hidden; position: relative; 
+            /* Memberikan ruang scroll yang halus */
+            scroll-behavior: smooth;
+        }
+        
+        /* Area Kerja Aktual (Tinggi bisa disesuaikan) */
+        #ruang-kerja {
+            width: 100%; min-height: 2000px; position: relative; background-color: transparent;
+        }
+
+        .teks-kanvas { color: #66fcf1; opacity: 0.1; text-align: center; padding-top: 20%; font-size: 2em; user-select: none; z-index: 0; pointer-events: none;}
 
         /* -- MENU MENGAMBANG -- */
         #menu-mengambang {
             position: absolute; background: #1f2833; border: 2px solid #66fcf1;
             border-radius: 8px; padding: 12px; display: none; flex-direction: column; gap: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7); z-index: 2000;
-            transition: opacity 0.2s; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7); z-index: 2000; transition: opacity 0.2s; 
         }
         #menu-mengambang::after {
             content: ''; position: absolute; bottom: -10px; left: 20px;
@@ -120,7 +131,7 @@
         .btn-bahaya { background: #c0392b; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn-bahaya:hover { background: #e74c3c; }
 
-        .komponen-aktif { outline: none !important; box-shadow: 0 0 0 3px #f39c12, 0 5px 15px rgba(0,0,0,0.5) !important; }
+        .komponen-aktif { outline: none !important; box-shadow: 0 0 0 3px #f39c12, 0 5px 15px rgba(0,0,0,0.5) !important; z-index: 1500 !important; }
         .komponen-terkunci.komponen-aktif { box-shadow: 0 0 0 3px #c0392b, 0 5px 15px rgba(0,0,0,0.5) !important; }
 
         /* -- GAYA KOMPONEN KANVAS -- */
@@ -178,9 +189,14 @@
             <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Warna Latar:</label>
             <input type="color" id="input-bg-kanvas" oninput="ubahLatarKanvas()" value="#0b0c10" style="width: 100%; height: 35px; padding: 0; border: none; border-radius: 5px; background: none; cursor: pointer;">
         </div>
-        <div>
+        <div style="margin-bottom: 10px;">
             <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Gambar Latar (URL):</label>
             <input type="text" id="input-bg-img-kanvas" placeholder="Link gambar..." oninput="ubahLatarKanvas()" style="width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; box-sizing: border-box; font-family: inherit; font-size: 12px;">
+        </div>
+        <!-- FITUR BARU: Mengatur Tinggi Kanvas -->
+        <div>
+            <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Tinggi Kanvas (px):</label>
+            <input type="number" id="input-tinggi-kanvas" value="2000" min="500" step="100" oninput="ubahLatarKanvas()" style="width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; box-sizing: border-box; font-family: inherit; font-size: 12px;">
         </div>
 
         <div class="area-sistem">
@@ -192,94 +208,100 @@
         </div>
     </div>
 
-    <div id="canvas" onclick="klikAreaKosong(event)">
+    <!-- PEMBUNGKUS UTAMA UNTUK SCROLLING -->
+    <div id="kanvas-wrapper">
+        <!-- UI Tetap (Tidak ikut tergulung) -->
         <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Buka Panel</button>
-        
         <div id="nama-desain-container">
             <input type="text" id="nama-desain" placeholder="Nama Website Anda..." oninput="simpanNamaDesain()">
         </div>
-
         <div id="status-simpan">✅ Tersimpan otomatis</div>
-        <div class="teks-kanvas">Ruang Kerja Inti</div>
-
         <button id="btn-pratinjau" onclick="togglePratinjau()">👁️ Pratinjau</button>
 
-        <!-- MENU MENGAMBANG -->
-        <div id="menu-mengambang">
-            <div class="baris-kontrol">
-                <div class="kontrol-item" id="kontrol-warna">
-                    <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Ubah Warna">
-                    <input type="text" id="input-warna-hex" placeholder="#FFFFFF" oninput="ubahWarna('hex')" style="width: 70px;">
-                </div>
+        <!-- AREA KANVAS (Yang bisa digulir) -->
+        <div id="canvas" onclick="klikAreaKosong(event)">
+            
+            <!-- RUANG KERJA AKTUAL (Tempat komponen diletakkan) -->
+            <div id="ruang-kerja">
+                <div class="teks-kanvas">Ruang Kerja Inti<br><span style="font-size: 16px; opacity: 0.6;">(Scroll ke bawah untuk ruang yang lebih luas)</span></div>
                 
-                <div class="kontrol-item" id="kontrol-font" style="display: none;">
-                    <label>Font:</label>
-                    <select id="input-font" onchange="ubahFont()" style="width: 90px;">
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Times New Roman', serif">Times</option>
-                        <option value="'Courier New', monospace">Courier</option>
-                        <option value="Verdana, sans-serif">Verdana</option>
-                        <option value="'Comic Sans MS', cursive">Comic</option>
-                    </select>
-                </div>
+                <!-- MENU MENGAMBANG dipindah ke dalam sini agar menempel dengan komponen -->
+                <div id="menu-mengambang">
+                    <div class="baris-kontrol">
+                        <div class="kontrol-item" id="kontrol-warna">
+                            <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Ubah Warna">
+                            <input type="text" id="input-warna-hex" placeholder="#FFFFFF" oninput="ubahWarna('hex')" style="width: 70px;">
+                        </div>
+                        
+                        <div class="kontrol-item" id="kontrol-font" style="display: none;">
+                            <label>Font:</label>
+                            <select id="input-font" onchange="ubahFont()" style="width: 90px;">
+                                <option value="Arial, sans-serif">Arial</option>
+                                <option value="'Times New Roman', serif">Times</option>
+                                <option value="'Courier New', monospace">Courier</option>
+                                <option value="Verdana, sans-serif">Verdana</option>
+                                <option value="'Comic Sans MS', cursive">Comic</option>
+                            </select>
+                        </div>
 
-                <div class="kontrol-item" id="kontrol-teks" style="display: none;">
-                    <label>Ukuran:</label>
-                    <input type="number" id="input-ukuran-teks" oninput="ubahUkuranTeks()">
-                </div>
-                
-                <div class="kontrol-item" id="kontrol-bentuk" style="display: none;">
-                    <label>Bentuk:</label>
-                    <select id="input-bentuk" onchange="ubahBentuk()">
-                        <option value="0px">Persegi</option>
-                        <option value="15px">Lengkung</option>
-                        <option value="50%">Lingkaran</option>
-                    </select>
-                </div>
-                
-                <button class="btn-mini-aksi" onclick="duplikatKomponen()" title="Duplikat Komponen">📄</button>
-                <button class="btn-mini-aksi" onclick="pindahLapis(1)" title="Pindah ke Depan">🔼</button>
-                <button class="btn-mini-aksi" onclick="pindahLapis(-1)" title="Pindah ke Belakang">🔽</button>
-                <button class="btn-mini-aksi" id="btn-kunci" onclick="kunciKomponen()" title="Kunci/Buka Komponen">🔓</button>
-                <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
-            </div>
+                        <div class="kontrol-item" id="kontrol-teks" style="display: none;">
+                            <label>Ukuran:</label>
+                            <input type="number" id="input-ukuran-teks" oninput="ubahUkuranTeks()">
+                        </div>
+                        
+                        <div class="kontrol-item" id="kontrol-bentuk" style="display: none;">
+                            <label>Bentuk:</label>
+                            <select id="input-bentuk" onchange="ubahBentuk()">
+                                <option value="0px">Persegi</option>
+                                <option value="15px">Lengkung</option>
+                                <option value="50%">Lingkaran</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn-mini-aksi" onclick="duplikatKomponen()" title="Duplikat Komponen">📄</button>
+                        <button class="btn-mini-aksi" onclick="pindahLapis(1)" title="Pindah ke Depan">🔼</button>
+                        <button class="btn-mini-aksi" onclick="pindahLapis(-1)" title="Pindah ke Belakang">🔽</button>
+                        <button class="btn-mini-aksi" id="btn-kunci" onclick="kunciKomponen()" title="Kunci/Buka Komponen">🔓</button>
+                        <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
+                    </div>
 
-            <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%;">
-                <label id="label-url" style="width: 70px;">URL Link:</label>
-                <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
-            </div>
+                    <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%;">
+                        <label id="label-url" style="width: 70px;">URL Link:</label>
+                        <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
+                    </div>
 
-            <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px;">
-                <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
-                <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
-                
-                <div class="grid-simbol">
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
-                    <!-- Template dikembalikan seperti semula tanpa warna -->
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{a}{b}')" title="Pecahan">a/b</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('x^2')" title="Pangkat">x²</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sqrt{x}')" title="Akar">√</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{a}^{b}')" title="Integral">∫</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{i=1}^{n}')" title="Sigma">∑</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{x \\to \\infty}')" title="Limit">lim</button>
-                    
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
+                    <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px;">
+                        <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
+                        <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
+                        
+                        <div class="grid-simbol">
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{a}{b}')" title="Pecahan">a/b</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('x^2')" title="Pangkat">x²</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sqrt{x}')" title="Akar">√</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{a}^{b}')" title="Integral">∫</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{i=1}^{n}')" title="Sigma">∑</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{x \\to \\infty}')" title="Limit">lim</button>
+                            
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
 
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\beta')" title="Beta">β</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pi')" title="Pi">π</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\infty')" title="Tak Terhingga">∞</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\approx')" title="Kira-kira">≈</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\neq')" title="Tidak Sama">≠</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\leq')" title="Kurang Dari Sama">≤</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\geq')" title="Lebih Dari Sama">≥</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pm')" title="Plus Minus">±</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\beta')" title="Beta">β</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pi')" title="Pi">π</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\infty')" title="Tak Terhingga">∞</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\approx')" title="Kira-kira">≈</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\neq')" title="Tidak Sama">≠</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\leq')" title="Kurang Dari Sama">≤</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\geq')" title="Lebih Dari Sama">≥</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\pm')" title="Plus Minus">±</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div> <!-- Akhir Ruang Kerja -->
+        </div> <!-- Akhir Canvas -->
+    </div> <!-- Akhir Wrapper -->
 
     <div id="notifikasi">Desain berhasil disimpan!</div>
 
@@ -347,8 +369,11 @@
         function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null) {
             let elemenBaru = document.createElement('div');
             
-            let defaultTop = posisiKustom ? posisiKustom.top : '150px';
+            // Logika Penempatan Awal Cerdas: Berada di posisi yang terlihat pengguna saat scroll
+            let scrollY = document.getElementById('canvas').scrollTop;
+            let defaultTop = posisiKustom ? posisiKustom.top : (150 + scrollY) + 'px';
             let defaultLeft = posisiKustom ? posisiKustom.left : '350px';
+            
             elemenBaru.style.top = defaultTop;
             elemenBaru.style.left = defaultLeft;
             elemenBaru.style.zIndex = zIndexKustom;
@@ -431,7 +456,8 @@
                 elemenBaru.onkeyup = function() { simpanDiamDiam(); };
             }
 
-            document.getElementById('canvas').appendChild(elemenBaru);
+            // PERUBAHAN: Pasang di dalam ruang-kerja
+            document.getElementById('ruang-kerja').appendChild(elemenBaru);
             buatBisaDigeserDanDiklik(elemenBaru);
             
             elemenBaru.ondblclick = function(e) {
@@ -646,6 +672,7 @@
             let fontBaru = document.getElementById('input-font').value;
             komponenTerpilih.style.fontFamily = fontBaru;
             simpanDiamDiam();
+            posisikanMenu(komponenTerpilih); 
         }
 
         function ubahRumus() {
@@ -839,7 +866,7 @@
 
         function klikAreaKosong(e) {
             if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container')) return;
-            if (e.target.id === 'canvas' || e.target.className === 'teks-kanvas') {
+            if (e.target.id === 'canvas' || e.target.id === 'ruang-kerja' || e.target.className === 'teks-kanvas') {
                 tutupMenuMengambang();
             }
         }
@@ -853,8 +880,8 @@
         }
 
         function simpanDiamDiam(paksaSimpan = false) {
-            let kanvas = document.getElementById('canvas');
-            let semuaKomponen = kanvas.children;
+            let ruangKerja = document.getElementById('ruang-kerja');
+            let semuaKomponen = ruangKerja.children;
             let dataDesain = [];
 
             for (let i = 0; i < semuaKomponen.length; i++) {
@@ -915,7 +942,13 @@
                 let bg = JSON.parse(bgInputs);
                 document.getElementById('input-bg-kanvas').value = bg.warna || "#0b0c10";
                 document.getElementById('input-bg-img-kanvas').value = bg.gambar || "";
+                
+                // Setel nilai input tinggi jika sudah pernah disimpan, jika tidak default 2000
+                document.getElementById('input-tinggi-kanvas').value = bg.tinggi || "2000";
                 ubahLatarKanvas(); 
+            } else {
+                // Jika belum pernah disetel, panggil fungsi untuk set default
+                ubahLatarKanvas();
             }
 
             let dataTersimpan = localStorage.getItem('SiriusWebSaveData');
@@ -930,24 +963,27 @@
         function ubahLatarKanvas() {
             let warna = document.getElementById('input-bg-kanvas').value;
             let urlImg = document.getElementById('input-bg-img-kanvas').value;
-            let kanvas = document.getElementById('canvas');
+            let tinggiKanvas = document.getElementById('input-tinggi-kanvas').value;
+            let ruangKerja = document.getElementById('ruang-kerja'); // Area yang diubah
 
-            kanvas.style.backgroundColor = warna;
+            ruangKerja.style.backgroundColor = warna;
+            ruangKerja.style.minHeight = tinggiKanvas + 'px';
+            
             if (urlImg) {
-                kanvas.style.backgroundImage = `url('${urlImg}')`;
-                kanvas.style.backgroundSize = "cover";
-                kanvas.style.backgroundPosition = "center";
+                ruangKerja.style.backgroundImage = `url('${urlImg}')`;
+                ruangKerja.style.backgroundSize = "cover";
+                ruangKerja.style.backgroundPosition = "center";
             } else {
-                kanvas.style.backgroundImage = "none";
+                ruangKerja.style.backgroundImage = "none";
             }
             
-            localStorage.setItem('SiriusWebBgInputs', JSON.stringify({ warna: warna, gambar: urlImg }));
+            localStorage.setItem('SiriusWebBgInputs', JSON.stringify({ warna: warna, gambar: urlImg, tinggi: tinggiKanvas }));
         }
 
         function bersihkanKanvas() {
             if(confirm("Yakin ingin menghapus semua elemen dari kanvas?")) {
-                let kanvas = document.getElementById('canvas');
-                let semuaKomponen = kanvas.querySelectorAll('[data-jenis]'); 
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
                 
                 semuaKomponen.forEach(elemen => {
                     elemen.remove();
