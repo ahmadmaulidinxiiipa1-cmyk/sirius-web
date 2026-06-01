@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sirius Web Builder</title>
     <style>
-        /* Pengaturan Dasar dan Tema Warna */
         body { 
             margin: 0; 
             display: flex; 
@@ -13,87 +12,335 @@
             font-family: Arial, sans-serif; 
             background-color: #0b0c10; 
             color: #c5c6c7; 
+            overflow: hidden;
         }
         
-        /* Area Menu Samping */
         #sidebar { 
             width: 250px; 
             background: #1f2833; 
             padding: 20px; 
             border-right: 2px solid #66fcf1; 
             box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 10;
+            transition: margin-left 0.4s ease;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
         }
         
-        #sidebar h2 { color: #66fcf1; margin-top: 0; }
+        .sidebar-tersembunyi { margin-left: -300px; }
         
-        /* Area Kanvas Kosong */
-        #canvas { 
-            flex-grow: 1; 
-            position: relative; 
-            overflow: hidden; 
+        #sidebar h2 { color: #66fcf1; margin-top: 0; margin-bottom: 5px;}
+        
+        .btn-aksi-panel {
+            background: transparent; color: #66fcf1; border: 1px solid #66fcf1;
+            padding: 5px 10px; cursor: pointer; border-radius: 5px; font-weight: bold;
+            transition: 0.3s; margin-bottom: 20px; width: 100%;
+        }
+        .btn-aksi-panel:hover { background: #66fcf1; color: #0b0c10; }
+        
+        #btn-buka-panel {
+            position: absolute; top: 20px; left: 20px; background: #1f2833;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: auto; z-index: 5; display: none;
         }
 
-        /* Teks Latar Belakang Kanvas */
+        #canvas { flex-grow: 1; position: relative; overflow: hidden; }
+
         .teks-kanvas {
-            color: #66fcf1; 
-            opacity: 0.1; 
-            text-align: center; 
-            margin-top: 20%;
-            font-size: 2em;
-            user-select: none;
+            color: #66fcf1; opacity: 0.1; text-align: center; 
+            margin-top: 20%; font-size: 2em; user-select: none;
         }
         
-        /* Desain Tombol */
+        .grup-tombol {
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
+        }
+
+        .pembatas-menu {
+            border-top: 1px solid #45a29e; margin: 15px 0; padding-top: 15px;
+            color: #45a29e; font-size: 14px; font-weight: bold;
+        }
+
         .btn { 
-            background: #66fcf1; 
-            color: #0b0c10; 
-            border: none; 
-            padding: 10px 15px; 
-            cursor: pointer; 
-            border-radius: 5px; 
-            width: 100%; 
-            font-weight: bold; 
-            transition: 0.3s;
+            background: #66fcf1; color: #0b0c10; border: none; padding: 10px 15px; 
+            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
         }
         .btn:hover { background: #45a29e; color: white; }
+
+        .btn-matematika {
+            background: #f39c12; color: white; border: none; padding: 10px 15px; 
+            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
+        }
+        .btn-matematika:hover { background: #e67e22; }
+
+        /* Tombol Sistem (Simpan/Muat) */
+        .btn-sistem {
+            background: #27ae60; color: white; border: none; padding: 10px 15px; 
+            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
+        }
+        .btn-sistem:hover { background: #2ecc71; }
         
-        /* Desain Kotak yang Akan Muncul */
+        .btn-bahaya {
+            background: #c0392b; color: white; border: none; padding: 10px 15px; 
+            cursor: pointer; border-radius: 5px; width: 100%; font-weight: bold; transition: 0.3s;
+        }
+        .btn-bahaya:hover { background: #e74c3c; }
+
+        /* Area bawah sidebar untuk tombol sistem */
+        .area-sistem {
+            margin-top: auto; /* Mendorong tombol sistem ke paling bawah */
+            padding-top: 20px;
+        }
+        
+        /* -- DESAIN KOMPONEN KANVAS -- */
         .elemen-kotak { 
-            width: 100px; 
-            height: 100px; 
-            background: #45a29e; 
-            position: absolute; 
-            top: 50px; 
-            left: 50px; 
-            border: 2px solid #66fcf1; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            width: 100px; height: 100px; background: #45a29e; position: absolute; 
+            border: 2px solid #66fcf1; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .elemen-teks {
+            position: absolute; color: #ffffff; font-size: 24px;
+            padding: 5px 10px; border: 1px dashed transparent; min-width: 50px;
+        }
+        .elemen-teks:hover { border: 1px dashed #66fcf1; cursor: grab; }
+        .elemen-teks:focus { border: 1px solid #66fcf1; outline: none; background: rgba(0,0,0,0.3); }
+
+        .elemen-gambar {
+            position: absolute; width: 150px; height: 100px;
+            background-color: #2c3e50; border: 2px solid #66fcf1; display: flex;
+            justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px;
+            font-size: 12px; user-select: none;
+        }
+
+        .elemen-tombol {
+            position: absolute; background: #66fcf1; color: #0b0c10;
+            padding: 10px 20px; border-radius: 20px; font-weight: bold; border: 2px solid transparent;
+            min-width: 80px; text-align: center;
+        }
+        .elemen-tombol:hover { border: 2px solid #ffffff; cursor: grab; }
+        .elemen-tombol:focus { outline: none; background: #45a29e; color: white; }
+
+        .elemen-rumus {
+            position: absolute; color: #f39c12; font-size: 32px;
+            font-family: 'Times New Roman', Times, serif; font-style: italic; 
+            padding: 10px 15px; border: 1px dashed transparent; min-width: 80px;
+            background: rgba(243, 156, 18, 0.1); border-radius: 5px;
+        }
+        .elemen-rumus:hover { border: 1px dashed #f39c12; cursor: grab; }
+        .elemen-rumus:focus { border: 1px solid #f39c12; outline: none; background: rgba(243, 156, 18, 0.2); }
+
+        /* Notifikasi */
+        #notifikasi {
+            position: fixed; bottom: 20px; right: 20px; background: #27ae60; color: white;
+            padding: 15px 25px; border-radius: 8px; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; z-index: 100;
         }
     </style>
 </head>
 <body>
 
-    <!-- Panel Sebelah Kiri -->
     <div id="sidebar">
+        <button class="btn-aksi-panel" onclick="tutupPanel()">⬅ Tutup Panel</button>
+        
         <h2>🚀 Sirius Web</h2>
-        <p>Panel Komponen</p>
-        <button class="btn" onclick="tambahKotak()">+ Tambah Kotak</button>
+        
+        <div class="pembatas-menu">Dasar Universal</div>
+        <div class="grup-tombol">
+            <button class="btn" onclick="tambahKomponen('kotak')">+ Kotak</button>
+            <button class="btn" onclick="tambahKomponen('teks')">+ Teks</button>
+            <button class="btn" onclick="tambahKomponen('gambar')">+ Gambar</button>
+            <button class="btn" onclick="tambahKomponen('tombol')">+ Tombol</button>
+        </div>
+
+        <div class="pembatas-menu">Spesialis Edukasi</div>
+        <div class="grup-tombol">
+            <button class="btn-matematika" onclick="tambahKomponen('rumus')">+ Blok Rumus</button>
+        </div>
+
+        <!-- Tombol Sistem di bagian bawah -->
+        <div class="area-sistem">
+            <div class="pembatas-menu" style="margin-top: 0;">Sistem Penyimpanan</div>
+            <div class="grup-tombol">
+                <button class="btn-sistem" onclick="simpanDesain()">💾 Simpan Desain</button>
+                <button class="btn-bahaya" onclick="bersihkanKanvas()">🗑 Bersihkan Kanvas</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Area Kerja Utama -->
     <div id="canvas">
-        <div class="teks-kanvas">Kanvas Kosong Alam Semesta</div>
+        <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanel()">☰ Buka Panel</button>
+        <div class="teks-kanvas" id="teks-kanvas-bg">Kanvas Kosong Alam Semesta</div>
     </div>
 
-    <!-- Sistem Logika (JavaScript) -->
+    <!-- Elemen Notifikasi -->
+    <div id="notifikasi">Desain berhasil disimpan!</div>
+
     <script>
-        function tambahKotak() {
-            // Membuat kotak baru saat tombol diklik
-            let kotakBaru = document.createElement('div');
-            kotakBaru.className = 'elemen-kotak';
+        // Saat halaman pertama kali dimuat, coba pulihkan desain yang tersimpan
+        window.onload = function() {
+            muatDesain();
+        };
+
+        function tutupPanel() {
+            document.getElementById('sidebar').classList.add('sidebar-tersembunyi');
+            document.getElementById('btn-buka-panel').style.display = 'block';
+        }
+
+        function bukaPanel() {
+            document.getElementById('sidebar').classList.remove('sidebar-tersembunyi');
+            document.getElementById('btn-buka-panel').style.display = 'none';
+        }
+
+        // Fungsi Induk untuk menambah komponen (lebih rapi)
+        function tambahKomponen(jenis, posisiKustom = null, isiTeksKustom = null) {
+            let elemenBaru = document.createElement('div');
             
-            // Meletakkan kotak ke dalam kanvas
-            document.getElementById('canvas').appendChild(kotakBaru);
+            // Set posisi awal di tengah layar jika tidak ada posisi kustom
+            let defaultTop = '150px';
+            let defaultLeft = '350px';
+
+            if (posisiKustom) {
+                defaultTop = posisiKustom.top;
+                defaultLeft = posisiKustom.left;
+            }
+            
+            elemenBaru.style.top = defaultTop;
+            elemenBaru.style.left = defaultLeft;
+
+            // Atur atribut berdasarkan jenis
+            switch(jenis) {
+                case 'kotak':
+                    elemenBaru.className = 'elemen-kotak';
+                    elemenBaru.dataset.jenis = 'kotak'; // Tanda pengenal untuk penyimpanan
+                    break;
+                case 'teks':
+                    elemenBaru.className = 'elemen-teks';
+                    elemenBaru.innerText = isiTeksKustom || "Ketik teks di sini...";
+                    elemenBaru.contentEditable = "true"; 
+                    elemenBaru.dataset.jenis = 'teks';
+                    break;
+                case 'gambar':
+                    elemenBaru.className = 'elemen-gambar';
+                    elemenBaru.innerText = isiTeksKustom || "Area Gambar"; 
+                    elemenBaru.dataset.jenis = 'gambar';
+                    break;
+                case 'tombol':
+                    elemenBaru.className = 'elemen-tombol';
+                    elemenBaru.innerText = isiTeksKustom || "Klik Di Sini";
+                    elemenBaru.contentEditable = "true"; 
+                    elemenBaru.dataset.jenis = 'tombol';
+                    break;
+                case 'rumus':
+                    elemenBaru.className = 'elemen-rumus';
+                    elemenBaru.innerText = isiTeksKustom || "E = mc²";
+                    elemenBaru.contentEditable = "true"; 
+                    elemenBaru.dataset.jenis = 'rumus';
+                    break;
+            }
+
+            document.getElementById('canvas').appendChild(elemenBaru);
+            buatBisaDigeser(elemenBaru);
+            
+            elemenBaru.ondblclick = function() {
+                elemenBaru.remove();
+            };
+        }
+
+        // --- SISTEM PENYIMPANAN (BRANKAS) ---
+        
+        function simpanDesain() {
+            let kanvas = document.getElementById('canvas');
+            let semuaKomponen = kanvas.children;
+            let dataDesain = [];
+
+            // Kumpulkan data setiap komponen yang ada di kanvas
+            for (let i = 0; i < semuaKomponen.length; i++) {
+                let elemen = semuaKomponen[i];
+                
+                // Pastikan yang disimpan hanya elemen komponen kita, bukan teks background atau tombol buka panel
+                if (elemen.dataset.jenis) {
+                    dataDesain.push({
+                        jenis: elemen.dataset.jenis,
+                        top: elemen.style.top,
+                        left: elemen.style.left,
+                        isi: elemen.innerText
+                    });
+                }
+            }
+
+            // Ubah data menjadi teks dan simpan ke Local Storage browser
+            localStorage.setItem('SiriusWebSaveData', JSON.stringify(dataDesain));
+            
+            tampilkanNotifikasi("Desain berhasil disimpan ke brankas!");
+        }
+
+        function muatDesain() {
+            let dataTersimpan = localStorage.getItem('SiriusWebSaveData');
+            
+            if (dataTersimpan) {
+                // Ubah teks kembali menjadi data terstruktur
+                let dataDesain = JSON.parse(dataTersimpan);
+                
+                // Buat ulang elemennya satu per satu di posisi yang sama
+                dataDesain.forEach(item => {
+                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi);
+                });
+            }
+        }
+
+        function bersihkanKanvas() {
+            if(confirm("Yakin ingin menghapus semua elemen dari kanvas?")) {
+                let kanvas = document.getElementById('canvas');
+                let semuaKomponen = kanvas.querySelectorAll('[data-jenis]'); // Pilih hanya komponen kita
+                
+                semuaKomponen.forEach(elemen => {
+                    elemen.remove();
+                });
+                
+                // Hapus data simpanan juga
+                localStorage.removeItem('SiriusWebSaveData');
+            }
+        }
+
+        function tampilkanNotifikasi(pesan) {
+            let notif = document.getElementById('notifikasi');
+            notif.innerText = pesan;
+            notif.style.display = 'block';
+            
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 3000); // Hilang setelah 3 detik
+        }
+
+        // --- MESIN UTAMA DRAG & DROP ---
+        function buatBisaDigeser(elemen) {
+            let titikXAwal = 0, titikYAwal = 0, posisiX = 0, posisiY = 0;
+
+            elemen.onmousedown = function(e) {
+                if (document.activeElement === elemen) return; 
+
+                e.preventDefault();
+                titikXAwal = e.clientX;
+                titikYAwal = e.clientY;
+                
+                document.onmousemove = geserElemen;
+                document.onmouseup = hentikanGeser;
+            };
+
+            function geserElemen(e) {
+                e.preventDefault();
+                posisiX = titikXAwal - e.clientX;
+                posisiY = titikYAwal - e.clientY;
+                titikXAwal = e.clientX;
+                titikYAwal = e.clientY;
+                
+                elemen.style.top = (elemen.offsetTop - posisiY) + "px";
+                elemen.style.left = (elemen.offsetLeft - posisiX) + "px";
+            }
+
+            function hentikanGeser() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
         }
     </script>
 
