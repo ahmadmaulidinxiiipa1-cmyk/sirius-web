@@ -31,7 +31,22 @@
         }
         .btn-aksi-panel:hover { background: #66fcf1; color: #0b0c10; }
         
-        /* -- PEMBUNGKUS KANVAS (Agar UI tidak ikut tergulung) -- */
+        /* -- MANAJEMEN HALAMAN CSS -- */
+        .item-halaman {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #2c3e50; padding: 5px 10px; border-radius: 5px; border: 1px solid transparent;
+            transition: 0.3s; margin-bottom: 5px;
+        }
+        .item-halaman:hover { border-color: #45a29e; cursor: pointer; }
+        .item-halaman.aktif {
+            border-color: #66fcf1; background: rgba(102, 252, 241, 0.1);
+        }
+        .item-halaman input {
+            background: transparent; border: none; color: #c5c6c7; font-family: inherit; width: 80%; outline: none; cursor: pointer;
+        }
+        .item-halaman.aktif input { color: #66fcf1; font-weight: bold; cursor: text; }
+
+        /* -- PEMBUNGKUS KANVAS -- */
         #kanvas-wrapper {
             flex-grow: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; background-color: #0b0c10;
         }
@@ -43,16 +58,29 @@
         }
 
         #nama-desain-container {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(31, 40, 51, 0.8); padding: 8px 20px; border-radius: 30px;
-            border: 1px solid #45a29e; display: flex; align-items: center; gap: 10px; z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background: rgba(11, 12, 16, 0.5); padding: 8px 10px; border-radius: 5px;
+            border: 1px solid #45a29e; display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px;
         }
         #nama-desain-container input {
             background: transparent; border: none; color: #66fcf1; font-size: 16px;
-            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 250px;
+            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 100%;
         }
         #nama-desain-container input::placeholder { color: #45a29e; }
+
+        /* FITUR BARU: Toolbar Simulator Perangkat */
+        #toolbar-perangkat {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; z-index: 1000; background: #1f2833; padding: 5px 15px; 
+            border-radius: 20px; border: 1px solid #45a29e; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        #toolbar-perangkat button {
+            background: transparent; border: none; color: #c5c6c7; cursor: pointer; 
+            font-weight: bold; padding: 5px 10px; border-radius: 10px; transition: 0.3s; font-size: 14px;
+        }
+        #toolbar-perangkat button:hover, #toolbar-perangkat button.aktif { 
+            background: #45a29e; color: #0b0c10; 
+        }
 
         #status-simpan {
             position: absolute; top: 20px; right: 20px; background: rgba(31, 40, 51, 0.8);
@@ -67,14 +95,12 @@
         }
         #btn-pratinjau:hover { background: #e67e22; transform: scale(1.05); }
 
-        /* -- AREA KANVAS (Yang Bisa Di-Scroll) -- */
+        /* -- AREA KANVAS -- */
         #canvas { 
             flex-grow: 1; overflow-y: auto; overflow-x: hidden; position: relative; 
-            /* Memberikan ruang scroll yang halus */
             scroll-behavior: smooth;
         }
         
-        /* Area Kerja Aktual (Tinggi bisa disesuaikan) */
         #ruang-kerja {
             width: 100%; min-height: 2000px; position: relative; background-color: transparent;
         }
@@ -169,6 +195,15 @@
         <button class="btn-aksi-panel" onclick="tutupPanelKiri()">⬅ Tutup Panel</button>
         <h2>🚀 Sirius Web</h2>
         
+        <div id="nama-desain-container">
+            <input type="text" id="nama-desain" placeholder="Nama Proyek Website..." oninput="simpanNamaDesain()">
+        </div>
+        
+        <!-- BAGIAN BARU: DAFTAR HALAMAN -->
+        <div class="pembatas-menu" style="margin-top: 10px;">Halaman Website</div>
+        <div id="daftar-halaman-ui" style="display: flex; flex-direction: column;"></div>
+        <button class="btn" onclick="tambahHalaman()" style="margin-top: 10px; margin-bottom: 20px; background: #3498db; color: white; border: none;">+ Halaman Baru</button>
+
         <div class="pembatas-menu" style="margin-top: 0;">Dasar Universal</div>
         <div class="grup-tombol">
             <button class="btn" onclick="tambahKomponen('kotak')">+ Kotak</button>
@@ -193,7 +228,6 @@
             <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Gambar Latar (URL):</label>
             <input type="text" id="input-bg-img-kanvas" placeholder="Link gambar..." oninput="ubahLatarKanvas()" style="width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; box-sizing: border-box; font-family: inherit; font-size: 12px;">
         </div>
-        <!-- FITUR BARU: Mengatur Tinggi Kanvas -->
         <div>
             <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Tinggi Kanvas (px):</label>
             <input type="number" id="input-tinggi-kanvas" value="2000" min="500" step="100" oninput="ubahLatarKanvas()" style="width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; box-sizing: border-box; font-family: inherit; font-size: 12px;">
@@ -203,6 +237,7 @@
             <div class="pembatas-menu" style="margin-top: 0;">Sistem Penyimpanan</div>
             <div class="grup-tombol">
                 <button class="btn-sistem" onclick="simpanManual()">💾 Simpan Desain</button>
+                <button class="btn-sistem" onclick="eksporKeHTML()" style="background: #2980b9;">📥 Ekspor HTML</button>
                 <button class="btn-bahaya" onclick="bersihkanKanvas()">🗑 Bersihkan Kanvas</button>
             </div>
         </div>
@@ -210,22 +245,22 @@
 
     <!-- PEMBUNGKUS UTAMA UNTUK SCROLLING -->
     <div id="kanvas-wrapper">
-        <!-- UI Tetap (Tidak ikut tergulung) -->
         <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Buka Panel</button>
-        <div id="nama-desain-container">
-            <input type="text" id="nama-desain" placeholder="Nama Website Anda..." oninput="simpanNamaDesain()">
+        
+        <!-- FITUR BARU: Toolbar Simulator Perangkat -->
+        <div id="toolbar-perangkat">
+            <button class="btn-perangkat aktif" onclick="ubahLebarKanvas('100%', this)">💻 Desktop</button>
+            <button class="btn-perangkat" onclick="ubahLebarKanvas('768px', this)">📱 Tablet</button>
+            <button class="btn-perangkat" onclick="ubahLebarKanvas('375px', this)">📱 HP</button>
         </div>
+
         <div id="status-simpan">✅ Tersimpan otomatis</div>
         <button id="btn-pratinjau" onclick="togglePratinjau()">👁️ Pratinjau</button>
 
-        <!-- AREA KANVAS (Yang bisa digulir) -->
         <div id="canvas" onclick="klikAreaKosong(event)">
-            
-            <!-- RUANG KERJA AKTUAL (Tempat komponen diletakkan) -->
             <div id="ruang-kerja">
                 <div class="teks-kanvas">Ruang Kerja Inti<br><span style="font-size: 16px; opacity: 0.6;">(Scroll ke bawah untuk ruang yang lebih luas)</span></div>
                 
-                <!-- MENU MENGAMBANG dipindah ke dalam sini agar menempel dengan komponen -->
                 <div id="menu-mengambang">
                     <div class="baris-kontrol">
                         <div class="kontrol-item" id="kontrol-warna">
@@ -299,23 +334,122 @@
                         </div>
                     </div>
                 </div>
-            </div> <!-- Akhir Ruang Kerja -->
-        </div> <!-- Akhir Canvas -->
-    </div> <!-- Akhir Wrapper -->
+            </div> 
+        </div> 
+    </div> 
 
     <div id="notifikasi">Desain berhasil disimpan!</div>
 
     <script>
         // --- INISIALISASI ---
+        let daftarHalaman = [];
+        let halamanAktif = 'page_1';
         let dataDesainTerakhir = "";
         let komponenTerpilih = null;
         let modePratinjau = false;
         let timerKeyboard; 
+        let isMemuatHalaman = false; // Kunci Perbaikan Bug Macet
 
         window.onload = function() {
             muatDesain();
             setInterval(simpanDiamDiam, 1000); 
         };
+
+        // --- SISTEM MANAJEMEN HALAMAN ---
+        function renderDaftarHalaman() {
+            let container = document.getElementById('daftar-halaman-ui');
+            if(!container) return; // Mencegah error jika div belum ada
+            container.innerHTML = '';
+            
+            daftarHalaman.forEach(hal => {
+                let div = document.createElement('div');
+                div.className = `item-halaman ${hal.id === halamanAktif ? 'aktif' : ''}`;
+                div.onclick = (e) => { if(e.target.tagName !== 'INPUT') pindahHalaman(hal.id); };
+                
+                div.innerHTML = `
+                    <input type="text" value="${hal.nama}" onchange="ubahNamaHalaman('${hal.id}', this.value)" ${hal.id !== halamanAktif ? 'readonly' : ''} title="Ubah nama halaman">
+                    ${daftarHalaman.length > 1 ? `<span onclick="hapusHalaman(event, '${hal.id}')" style="cursor:pointer;" title="Hapus">❌</span>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function tambahHalaman() {
+            simpanDiamDiam(true); 
+            
+            let idBaru = 'page_' + Date.now();
+            daftarHalaman.push({
+                id: idBaru,
+                nama: 'Halaman ' + (daftarHalaman.length + 1),
+                komponen: [],
+                latar: { warna: '#0b0c10', gambar: '', tinggi: '2000' }
+            });
+            
+            pindahHalaman(idBaru);
+        }
+
+        function pindahHalaman(idTarget) {
+            if(halamanAktif === idTarget) return;
+            simpanDiamDiam(true); 
+            muatHalamanKeKanvas(idTarget);
+        }
+
+        function hapusHalaman(e, idTarget) {
+            e.stopPropagation();
+            if(daftarHalaman.length <= 1) return alert("Minimal harus ada 1 halaman!");
+            if(confirm("Yakin ingin menghapus halaman ini?")) {
+                daftarHalaman = daftarHalaman.filter(h => h.id !== idTarget);
+                if(halamanAktif === idTarget) {
+                    muatHalamanKeKanvas(daftarHalaman[0].id);
+                } else {
+                    renderDaftarHalaman();
+                    simpanDiamDiam(true);
+                }
+            }
+        }
+
+        function ubahNamaHalaman(id, namaBaru) {
+            let hal = daftarHalaman.find(h => h.id === id);
+            if(hal) hal.nama = namaBaru || 'Tanpa Nama';
+            simpanDiamDiam(true);
+        }
+
+        function muatHalamanKeKanvas(id) {
+            halamanAktif = id;
+            tutupMenuMengambang();
+
+            let halaman = daftarHalaman.find(h => h.id === id);
+            if(!halaman) return;
+
+            isMemuatHalaman = true; // Mencegah auto-save berulang saat render (Solusi Macet)
+
+            let ruangKerja = document.getElementById('ruang-kerja');
+            let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
+            semuaKomponen.forEach(el => el.remove());
+
+            document.getElementById('input-bg-kanvas').value = halaman.latar.warna || '#0b0c10';
+            document.getElementById('input-bg-img-kanvas').value = halaman.latar.gambar || '';
+            document.getElementById('input-tinggi-kanvas').value = halaman.latar.tinggi || '2000';
+            
+            ruangKerja.style.backgroundColor = halaman.latar.warna || '#0b0c10';
+            ruangKerja.style.minHeight = (halaman.latar.tinggi || '2000') + 'px';
+            if (halaman.latar.gambar) {
+                ruangKerja.style.backgroundImage = `url('${halaman.latar.gambar}')`;
+                ruangKerja.style.backgroundSize = "cover";
+                ruangKerja.style.backgroundPosition = "center";
+            } else {
+                ruangKerja.style.backgroundImage = "none";
+            }
+
+            halaman.komponen.forEach(item => {
+                tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily);
+            });
+
+            renderDaftarHalaman(); 
+            isMemuatHalaman = false; // Buka kembali auto-save
+            simpanDiamDiam(true); // Lakukan 1 kali save di akhir saja
+            dataDesainTerakhir = JSON.stringify(daftarHalaman); 
+        }
 
         // --- SISTEM NAMA DESAIN ---
         function simpanNamaDesain() {
@@ -330,14 +464,14 @@
             let canvas = document.getElementById('canvas');
             let sidebar = document.getElementById('sidebar-kiri');
             let btnBuka = document.getElementById('btn-buka-panel');
-            let namaDesain = document.getElementById('nama-desain-container');
+            let toolbarPerangkat = document.getElementById('toolbar-perangkat');
             let btnPreview = document.getElementById('btn-pratinjau');
 
             if (modePratinjau) {
                 tutupMenuMengambang();
                 sidebar.classList.add('sidebar-tersembunyi');
                 btnBuka.style.display = 'none';
-                namaDesain.style.display = 'none';
+                toolbarPerangkat.style.display = 'none';
                 document.getElementById('status-simpan').style.display = 'none';
                 
                 if(komponenTerpilih) komponenTerpilih.classList.remove('komponen-aktif');
@@ -347,7 +481,7 @@
                 btnPreview.style.background = '#e74c3c';
             } else {
                 btnBuka.style.display = 'block';
-                namaDesain.style.display = 'flex';
+                toolbarPerangkat.style.display = 'flex';
                 document.getElementById('status-simpan').style.display = 'block';
                 
                 canvas.classList.remove('mode-pratinjau');
@@ -369,7 +503,6 @@
         function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null) {
             let elemenBaru = document.createElement('div');
             
-            // Logika Penempatan Awal Cerdas: Berada di posisi yang terlihat pengguna saat scroll
             let scrollY = document.getElementById('canvas').scrollTop;
             let defaultTop = posisiKustom ? posisiKustom.top : (150 + scrollY) + 'px';
             let defaultLeft = posisiKustom ? posisiKustom.left : '350px';
@@ -456,7 +589,6 @@
                 elemenBaru.onkeyup = function() { simpanDiamDiam(); };
             }
 
-            // PERUBAHAN: Pasang di dalam ruang-kerja
             document.getElementById('ruang-kerja').appendChild(elemenBaru);
             buatBisaDigeserDanDiklik(elemenBaru);
             
@@ -476,7 +608,7 @@
             let titikXAwal = 0, titikYAwal = 0, posisiX = 0, posisiY = 0;
             let sedangDigeser = false;
 
-            elemen.onmousedown = function(e) {
+            function mulaiGeser(e) {
                 if (modePratinjau) {
                     if (elemen.className.includes('elemen-tombol') && elemen.dataset.url) {
                         let link = elemen.dataset.url;
@@ -495,27 +627,40 @@
                 if (elemen.dataset.terkunci === 'true') return;
 
                 let rect = elemen.getBoundingClientRect();
-                let isResizeArea = (e.clientX > rect.right - 20) && (e.clientY > rect.bottom - 20);
+                // Deteksi client X/Y dari mouse ATAU sentuhan HP
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                let isResizeArea = (clientX > rect.right - 20) && (clientY > rect.bottom - 20);
                 if ((elemen.className.includes('kotak') || elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio')) && isResizeArea) {
                     return; 
                 }
 
-                e.preventDefault();
-                titikXAwal = e.clientX;
-                titikYAwal = e.clientY;
+                if(e.type !== 'touchstart') e.preventDefault();
+                titikXAwal = clientX;
+                titikYAwal = clientY;
                 sedangDigeser = false;
                 
                 document.onmousemove = geserElemen;
                 document.onmouseup = hentikanGeser;
-            };
+                document.ontouchmove = geserElemen;
+                document.ontouchend = hentikanGeser;
+            }
+
+            elemen.onmousedown = mulaiGeser;
+            elemen.ontouchstart = mulaiGeser; // Event untuk HP
 
             function geserElemen(e) {
-                e.preventDefault();
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                if(e.type === 'touchmove') e.preventDefault(); // Mencegah layar HP ikut terscroll
+                
                 sedangDigeser = true; 
-                posisiX = titikXAwal - e.clientX;
-                posisiY = titikYAwal - e.clientY;
-                titikXAwal = e.clientX;
-                titikYAwal = e.clientY;
+                posisiX = titikXAwal - clientX;
+                posisiY = titikYAwal - clientY;
+                titikXAwal = clientX;
+                titikYAwal = clientY;
                 
                 elemen.style.top = (elemen.offsetTop - posisiY) + "px";
                 elemen.style.left = (elemen.offsetLeft - posisiX) + "px";
@@ -527,11 +672,24 @@
             function hentikanGeser(e) {
                 document.onmouseup = null;
                 document.onmousemove = null;
+                document.ontouchmove = null;
+                document.ontouchend = null;
                 
                 if (!sedangDigeser && elemen.contentEditable === "true") {
                     elemen.focus();
                 }
+                
                 if (sedangDigeser) {
+                    // FITUR BARU: Efek Magnet (Snap to Grid) saat dilepas
+                    let gridAktif = document.getElementById('toggle-grid') && document.getElementById('toggle-grid').checked;
+                    if (gridAktif) {
+                        let topSaatIni = parseInt(elemen.style.top || 0);
+                        let leftSaatIni = parseInt(elemen.style.left || 0);
+                        // Dibulatkan ke kelipatan 20px (ukuran grid)
+                        elemen.style.top = Math.round(topSaatIni / 20) * 20 + "px";
+                        elemen.style.left = Math.round(leftSaatIni / 20) * 20 + "px";
+                    }
+
                     simpanDiamDiam();
                     if (komponenTerpilih === elemen) {
                         posisikanMenu(elemen);
@@ -871,7 +1029,7 @@
             }
         }
 
-        // --- SISTEM PENYIMPANAN LOKAL (BRANKAS) ---
+        // --- SISTEM PENYIMPANAN LOKAL (MULTI-PAGE) ---
         function simpanManual() {
             simpanDiamDiam(true); 
             let notif = document.getElementById('notifikasi');
@@ -880,9 +1038,11 @@
         }
 
         function simpanDiamDiam(paksaSimpan = false) {
+            if (isMemuatHalaman) return; // Langsung batal jika sedang memuat halaman baru
+
             let ruangKerja = document.getElementById('ruang-kerja');
             let semuaKomponen = ruangKerja.children;
-            let dataDesain = [];
+            let dataKanvasSaatIni = [];
 
             for (let i = 0; i < semuaKomponen.length; i++) {
                 let elemen = semuaKomponen[i];
@@ -896,7 +1056,7 @@
                         bgData = audio ? audio.src : "";
                     }
 
-                    dataDesain.push({
+                    dataKanvasSaatIni.push({
                         jenis: elemen.dataset.jenis,
                         top: elemen.style.top,
                         left: elemen.style.left,
@@ -916,14 +1076,24 @@
                 }
             }
 
-            let dataString = JSON.stringify(dataDesain);
+            let indexHal = daftarHalaman.findIndex(h => h.id === halamanAktif);
+            if(indexHal !== -1) {
+                daftarHalaman[indexHal].komponen = dataKanvasSaatIni;
+                daftarHalaman[indexHal].latar = {
+                    warna: document.getElementById('input-bg-kanvas').value,
+                    gambar: document.getElementById('input-bg-img-kanvas').value,
+                    tinggi: document.getElementById('input-tinggi-kanvas').value
+                };
+            }
+
+            let dataString = JSON.stringify(daftarHalaman);
 
             if (dataString !== dataDesainTerakhir || paksaSimpan) {
                 let status = document.getElementById('status-simpan');
                 status.innerText = "⏳ Menyimpan...";
                 status.style.color = "#f39c12"; 
 
-                localStorage.setItem('SiriusWebSaveData', dataString);
+                localStorage.setItem('SiriusWebPages', dataString);
                 dataDesainTerakhir = dataString;
 
                 setTimeout(() => {
@@ -937,34 +1107,36 @@
             let savedName = localStorage.getItem('SiriusWebProjectName');
             if (savedName) document.getElementById('nama-desain').value = savedName;
 
-            let bgInputs = localStorage.getItem('SiriusWebBgInputs');
-            if (bgInputs) {
-                let bg = JSON.parse(bgInputs);
-                document.getElementById('input-bg-kanvas').value = bg.warna || "#0b0c10";
-                document.getElementById('input-bg-img-kanvas').value = bg.gambar || "";
-                
-                // Setel nilai input tinggi jika sudah pernah disimpan, jika tidak default 2000
-                document.getElementById('input-tinggi-kanvas').value = bg.tinggi || "2000";
-                ubahLatarKanvas(); 
+            let dataPages = localStorage.getItem('SiriusWebPages');
+            
+            if (dataPages) {
+                daftarHalaman = JSON.parse(dataPages);
             } else {
-                // Jika belum pernah disetel, panggil fungsi untuk set default
-                ubahLatarKanvas();
+                let dataLama = localStorage.getItem('SiriusWebSaveData');
+                let bgLama = localStorage.getItem('SiriusWebBgInputs');
+                let bgObj = bgLama ? JSON.parse(bgLama) : { warna: '#0b0c10', gambar: '', tinggi: '2000' };
+                
+                daftarHalaman = [{
+                    id: 'page_1',
+                    nama: 'Beranda',
+                    komponen: dataLama ? JSON.parse(dataLama) : [],
+                    latar: bgObj
+                }];
             }
 
-            let dataTersimpan = localStorage.getItem('SiriusWebSaveData');
-            if (dataTersimpan) {
-                let dataDesain = JSON.parse(dataTersimpan);
-                dataDesain.forEach(item => {
-                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily);
-                });
+            renderDaftarHalaman();
+            
+            if(!halamanAktif || !daftarHalaman.find(h => h.id === halamanAktif)) {
+                halamanAktif = daftarHalaman[0].id;
             }
+            muatHalamanKeKanvas(halamanAktif);
         }
 
         function ubahLatarKanvas() {
             let warna = document.getElementById('input-bg-kanvas').value;
             let urlImg = document.getElementById('input-bg-img-kanvas').value;
             let tinggiKanvas = document.getElementById('input-tinggi-kanvas').value;
-            let ruangKerja = document.getElementById('ruang-kerja'); // Area yang diubah
+            let ruangKerja = document.getElementById('ruang-kerja'); 
 
             ruangKerja.style.backgroundColor = warna;
             ruangKerja.style.minHeight = tinggiKanvas + 'px';
@@ -977,22 +1149,139 @@
                 ruangKerja.style.backgroundImage = "none";
             }
             
-            localStorage.setItem('SiriusWebBgInputs', JSON.stringify({ warna: warna, gambar: urlImg, tinggi: tinggiKanvas }));
+            // Jaga agar grid tidak tertimpa jika sedang aktif
+            toggleGrid(); 
+            simpanDiamDiam(); 
+        }
+
+        // FITUR BARU: Fungsi untuk mengaktifkan/mematikan Grid visual
+        function toggleGrid() {
+            let rg = document.getElementById('ruang-kerja');
+            let checkbox = document.getElementById('toggle-grid');
+            if (checkbox && checkbox.checked) {
+                rg.classList.add('grid-aktif');
+            } else {
+                rg.classList.remove('grid-aktif');
+            }
         }
 
         function bersihkanKanvas() {
-            if(confirm("Yakin ingin menghapus semua elemen dari kanvas?")) {
+            if(confirm("Yakin ingin menghapus semua elemen dari halaman ini?")) {
                 let ruangKerja = document.getElementById('ruang-kerja');
                 let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
-                
                 semuaKomponen.forEach(elemen => {
                     elemen.remove();
                 });
-                
-                localStorage.removeItem('SiriusWebSaveData');
                 simpanDiamDiam(true);
                 tutupMenuMengambang();
             }
+        }
+
+        // FITUR BARU: Fungsi Mode Perangkat
+        function ubahLebarKanvas(lebar, elemenTombol) {
+            let ruangKerja = document.getElementById('ruang-kerja');
+            ruangKerja.style.width = lebar;
+            ruangKerja.style.margin = '0 auto';
+            ruangKerja.style.transition = 'width 0.3s ease';
+            
+            if(lebar !== '100%') {
+                ruangKerja.style.borderLeft = '2px dashed #45a29e';
+                ruangKerja.style.borderRight = '2px dashed #45a29e';
+            } else {
+                ruangKerja.style.borderLeft = 'none';
+                ruangKerja.style.borderRight = 'none';
+            }
+
+            // Ganti status aktif di toolbar
+            let tombolPerangkat = document.querySelectorAll('.btn-perangkat');
+            tombolPerangkat.forEach(btn => btn.classList.remove('aktif'));
+            elemenTombol.classList.add('aktif');
+            
+            tutupMenuMengambang();
+        }
+
+        // --- SISTEM EKSPOR KE HTML ---
+        function eksporKeHTML() {
+            let namaDesain = document.getElementById('nama-desain').value || 'Website_Sirius';
+            let ruangKerjaAsli = document.getElementById('ruang-kerja');
+            
+            let klonRuangKerja = ruangKerjaAsli.cloneNode(true);
+            
+            let menu = klonRuangKerja.querySelector('#menu-mengambang');
+            if (menu) menu.remove();
+            let teksKanvas = klonRuangKerja.querySelector('.teks-kanvas');
+            if (teksKanvas) teksKanvas.remove();
+            
+            let semuaKomponen = klonRuangKerja.querySelectorAll('[data-jenis]');
+            semuaKomponen.forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.classList.remove('komponen-aktif', 'komponen-terkunci');
+                
+                if (el.dataset.jenis === 'tombol' && el.dataset.url) {
+                    let link = el.dataset.url;
+                    if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                        link = 'https://' + link; 
+                    }
+                    el.setAttribute('onclick', `window.open('${link}', '_blank')`);
+                }
+            });
+
+            let bgWarna = ruangKerjaAsli.style.backgroundColor || '#0b0c10';
+            let bgGambar = ruangKerjaAsli.style.backgroundImage || 'none';
+            let bgTinggi = ruangKerjaAsli.style.minHeight || '2000px';
+
+            let htmlAkhir = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${namaDesain}</title>
+    <!-- CSS KaTeX untuk dukungan rumus matematika -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        body {
+            margin: 0; padding: 0;
+            background-color: ${bgWarna};
+            background-image: ${bgGambar};
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            min-height: ${bgTinggi};
+            overflow-x: hidden;
+            position: relative;
+        }
+        [class^="elemen-"] { position: absolute; box-sizing: border-box; }
+        .elemen-video iframe { width: 100%; height: 100%; border: none; }
+        .elemen-audio audio { width: 95%; height: 40px; outline: none; }
+        .elemen-tombol { cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+        .elemen-tombol:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .placeholder-media { display: none; }
+    </style>
+</head>
+<body>
+    ${klonRuangKerja.innerHTML}
+</body>
+</html>`;
+
+            let blob = new Blob([htmlAkhir], { type: 'text/html' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = namaDesain.replace(/\s+/g, '_') + '.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            let notif = document.getElementById('notifikasi');
+            notif.innerText = "🎉 Website berhasil diekspor!";
+            notif.style.display = 'block';
+            setTimeout(() => { 
+                notif.style.display = 'none'; 
+                notif.innerText = "Desain berhasil disimpan!";
+            }, 3000);
         }
     </script>
 </body>
