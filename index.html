@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sirius Web Builder - Editor</title>
 
+    <!-- Library KaTeX untuk Rumus Matematika -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
@@ -73,7 +74,7 @@
             position: absolute; background: #1f2833; border: 2px solid #66fcf1;
             border-radius: 8px; padding: 12px; display: none; flex-direction: column; gap: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.7); z-index: 2000;
-            transition: opacity 0.2s; /* Animasi saat muncul/hilang halus */
+            transition: opacity 0.2s; 
         }
         #menu-mengambang::after {
             content: ''; position: absolute; bottom: -10px; left: 20px;
@@ -129,11 +130,10 @@
         .elemen-gambar { position: absolute; width: 150px; height: 100px; background-color: #2c3e50; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
         
         .elemen-video { position: absolute; width: 250px; height: 150px; background-color: #000; border: 2px solid #f39c12; display: flex; justify-content: center; align-items: center; color: #fff; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
-        .elemen-video iframe { width: 100%; height: 100%; border: none; pointer-events: none; /* Cegah klik saat edit */ }
+        .elemen-video iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
         
-        /* Komponen Audio Baru */
         .elemen-audio { position: absolute; width: 280px; height: 60px; background-color: #1f2833; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; border-radius: 30px; resize: horizontal; overflow: hidden; }
-        .elemen-audio audio { width: 95%; height: 40px; outline: none; pointer-events: none; /* Cegah klik saat edit */ }
+        .elemen-audio audio { width: 95%; height: 40px; outline: none; pointer-events: none; }
         .placeholder-media { position: absolute; font-size: 12px; color: #66fcf1; pointer-events: none; }
 
         .elemen-tombol { position: absolute; background: #66fcf1; color: #0b0c10; padding: 10px 20px; border-radius: 20px; font-weight: bold; text-align: center; min-width: 80px; }
@@ -141,13 +141,12 @@
 
         #notifikasi { position: fixed; bottom: 20px; left: 20px; background: #27ae60; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; z-index: 3000; }
 
-        /* -- MODE PRATINJAU (PREVIEW) AJAIB -- */
+        /* -- MODE PRATINJAU (PREVIEW) -- */
         .mode-pratinjau .teks-kanvas { display: none !important; }
         .mode-pratinjau .komponen-aktif { box-shadow: none !important; }
         .mode-pratinjau .elemen-kotak, .mode-pratinjau .elemen-gambar, .mode-pratinjau .elemen-video, .mode-pratinjau .elemen-audio { border: none !important; resize: none !important; }
         .mode-pratinjau .elemen-teks:hover { border: 1px dashed transparent !important; cursor: default !important; }
         .mode-pratinjau .elemen-rumus { background: transparent !important; cursor: default !important; }
-        /* Aktifkan kembali fungsi klik untuk video, audio, dan TOMBOL agar bisa berinteraksi */
         .mode-pratinjau .elemen-video iframe, .mode-pratinjau .elemen-audio audio { pointer-events: auto !important; }
         .mode-pratinjau .elemen-tombol { cursor: pointer !important; transition: 0.2s; }
         .mode-pratinjau .elemen-tombol:hover { transform: scale(1.05); }
@@ -165,7 +164,7 @@
             <button class="btn" onclick="tambahKomponen('teks')">+ Teks</button>
             <button class="btn" onclick="tambahKomponen('gambar')">+ Gambar</button>
             <button class="btn" onclick="tambahKomponen('video')">+ Video</button>
-            <button class="btn" onclick="tambahKomponen('audio')">+ Musik</button> <!-- Baru -->
+            <button class="btn" onclick="tambahKomponen('audio')">+ Musik</button>
             <button class="btn" onclick="tambahKomponen('tombol')">+ Tombol</button>
         </div>
 
@@ -196,7 +195,6 @@
     <div id="canvas" onclick="klikAreaKosong(event)">
         <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Buka Panel</button>
         
-        <!-- Header Nama Website -->
         <div id="nama-desain-container">
             <input type="text" id="nama-desain" placeholder="Nama Website Anda..." oninput="simpanNamaDesain()">
         </div>
@@ -204,18 +202,27 @@
         <div id="status-simpan">✅ Tersimpan otomatis</div>
         <div class="teks-kanvas">Ruang Kerja Inti</div>
 
-        <!-- Tombol Pratinjau Canggih -->
         <button id="btn-pratinjau" onclick="togglePratinjau()">👁️ Pratinjau</button>
 
         <!-- MENU MENGAMBANG -->
         <div id="menu-mengambang">
-            <!-- Baris 1: Kontrol Umum & Alat -->
             <div class="baris-kontrol">
                 <div class="kontrol-item" id="kontrol-warna">
                     <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Ubah Warna">
                     <input type="text" id="input-warna-hex" placeholder="#FFFFFF" oninput="ubahWarna('hex')" style="width: 70px;">
                 </div>
                 
+                <div class="kontrol-item" id="kontrol-font" style="display: none;">
+                    <label>Font:</label>
+                    <select id="input-font" onchange="ubahFont()" style="width: 90px;">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times</option>
+                        <option value="'Courier New', monospace">Courier</option>
+                        <option value="Verdana, sans-serif">Verdana</option>
+                        <option value="'Comic Sans MS', cursive">Comic</option>
+                    </select>
+                </div>
+
                 <div class="kontrol-item" id="kontrol-teks" style="display: none;">
                     <label>Ukuran:</label>
                     <input type="number" id="input-ukuran-teks" oninput="ubahUkuranTeks()">
@@ -237,29 +244,27 @@
                 <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
             </div>
 
-            <!-- Baris 2: URL Gambar/Video/Audio/TOMBOL -->
             <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%;">
                 <label id="label-url" style="width: 70px;">URL Link:</label>
                 <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
             </div>
 
-            <!-- Baris 3: Editor Matematika (Format LaTeX) Lengkap -->
             <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px;">
                 <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
                 <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
                 
                 <div class="grid-simbol">
                     <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
-                    <!-- Template dengan Huruf Hijau (#2ecc71) sebagai Penanda -->
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{\\color{#2ecc71}{a}}{\\color{#2ecc71}{b}}')" title="Pecahan">a/b</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\color{#2ecc71}{x}^2')" title="Pangkat">x²</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sqrt{\\color{#2ecc71}{x}}')" title="Akar">√</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{\\color{#2ecc71}{a}}^{\\color{#2ecc71}{b}}')" title="Integral">∫</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{\\color{#2ecc71}{i}=1}^{\\color{#2ecc71}{n}}')" title="Sigma">∑</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{\\color{#2ecc71}{x} \\to \\infty}')" title="Limit">lim</button>
+                    <!-- Template dikembalikan seperti semula tanpa warna -->
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{a}{b}')" title="Pecahan">a/b</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('x^2')" title="Pangkat">x²</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sqrt{x}')" title="Akar">√</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{a}^{b}')" title="Integral">∫</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{i=1}^{n}')" title="Sigma">∑</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{x \\to \\infty}')" title="Limit">lim</button>
                     
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} \\color{#2ecc71}{a} & \\color{#2ecc71}{b} & \\color{#2ecc71}{c} \\\\ \\color{#2ecc71}{d} & \\color{#2ecc71}{e} & \\color{#2ecc71}{f} \\\\ \\color{#2ecc71}{g} & \\color{#2ecc71}{h} & \\color{#2ecc71}{i} \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
-                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} \\color{#2ecc71}{x} \\\\ \\color{#2ecc71}{y} \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
+                    <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
 
                     <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
                     <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
@@ -282,8 +287,8 @@
         // --- INISIALISASI ---
         let dataDesainTerakhir = "";
         let komponenTerpilih = null;
-        let modePratinjau = false; // Mode ajaib
-        let timerKeyboard; // Timer untuk delay menu saat digeser panah
+        let modePratinjau = false;
+        let timerKeyboard; 
 
         window.onload = function() {
             muatDesain();
@@ -294,7 +299,7 @@
         function simpanNamaDesain() {
             let nama = document.getElementById('nama-desain').value;
             localStorage.setItem('SiriusWebProjectName', nama);
-            simpanDiamDiam(); // Pancing indikator simpan
+            simpanDiamDiam();
         }
 
         // --- SISTEM MODE PRATINJAU ---
@@ -307,7 +312,6 @@
             let btnPreview = document.getElementById('btn-pratinjau');
 
             if (modePratinjau) {
-                // Aktifkan Mode Final (Bersih)
                 tutupMenuMengambang();
                 sidebar.classList.add('sidebar-tersembunyi');
                 btnBuka.style.display = 'none';
@@ -320,7 +324,6 @@
                 btnPreview.innerText = '✏️ Keluar Pratinjau';
                 btnPreview.style.background = '#e74c3c';
             } else {
-                // Kembali ke Mode Editor
                 btnBuka.style.display = 'block';
                 namaDesain.style.display = 'flex';
                 document.getElementById('status-simpan').style.display = 'block';
@@ -341,7 +344,6 @@
         }
 
         // --- SISTEM PEMBUATAN KOMPONEN ---
-        // Tambahan parameter fontFamilyKustom
         function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null) {
             let elemenBaru = document.createElement('div');
             
@@ -357,7 +359,6 @@
             if (lebarKustom) elemenBaru.style.width = lebarKustom;
             if (tinggiKustom) elemenBaru.style.height = tinggiKustom;
             if (radiusKustom) elemenBaru.style.borderRadius = radiusKustom;
-            // Terapkan font kustom jika ada
             if (fontFamilyKustom) elemenBaru.style.fontFamily = fontFamilyKustom;
 
             switch(jenis) {
@@ -395,7 +396,7 @@
                         elemenBaru.innerHTML = `<div class="placeholder-media">Area Video</div>`;
                     }
                     break;
-                case 'audio': // KOMPONEN BARU
+                case 'audio': 
                     elemenBaru.className = 'elemen-audio';
                     elemenBaru.dataset.jenis = 'audio';
                     if (bgKustom && bgKustom !== "none") {
@@ -434,7 +435,7 @@
             buatBisaDigeserDanDiklik(elemenBaru);
             
             elemenBaru.ondblclick = function(e) {
-                if (modePratinjau) return; // Cegah hapus di mode preview
+                if (modePratinjau) return; 
                 e.stopPropagation();
                 if(komponenTerpilih === elemenBaru) tutupMenuMengambang();
                 elemenBaru.remove();
@@ -451,13 +452,12 @@
 
             elemen.onmousedown = function(e) {
                 if (modePratinjau) {
-                    // Fungsi Link Tombol Aktif Saat Pratinjau
                     if (elemen.className.includes('elemen-tombol') && elemen.dataset.url) {
                         let link = elemen.dataset.url;
                         if (!link.startsWith('http://') && !link.startsWith('https://')) {
-                            link = 'https://' + link; // Pastikan link tidak error
+                            link = 'https://' + link; 
                         }
-                        window.open(link, '_blank'); // Buka link di tab baru
+                        window.open(link, '_blank'); 
                     }
                     return; 
                 }
@@ -494,7 +494,6 @@
                 elemen.style.top = (elemen.offsetTop - posisiY) + "px";
                 elemen.style.left = (elemen.offsetLeft - posisiX) + "px";
 
-                // Sembunyikan menu melayang secara instan saat sedang digeser
                 document.getElementById('menu-mengambang').style.opacity = '0';
                 document.getElementById('menu-mengambang').style.pointerEvents = 'none';
             }
@@ -508,7 +507,6 @@
                 }
                 if (sedangDigeser) {
                     simpanDiamDiam();
-                    // Tampilkan kembali menu di koordinat yang baru
                     if (komponenTerpilih === elemen) {
                         posisikanMenu(elemen);
                         document.getElementById('menu-mengambang').style.opacity = '1';
@@ -550,7 +548,7 @@
             }
 
             document.getElementById('kontrol-teks').style.display = 'none';
-            document.getElementById('kontrol-font').style.display = 'none'; // Sembunyikan kontrol font awalnya
+            document.getElementById('kontrol-font').style.display = 'none';
             document.getElementById('kontrol-gambar').style.display = 'none';
             document.getElementById('kontrol-bentuk').style.display = 'none';
             document.getElementById('kontrol-rumus').style.display = 'none';
@@ -567,18 +565,36 @@
                 document.getElementById('kontrol-teks').style.display = 'flex';
                 let fontSaatIni = window.getComputedStyle(elemen).fontSize;
                 document.getElementById('input-ukuran-teks').value = parseInt(fontSaatIni);
-                
-                // Jika itu Teks atau Tombol, tampilkan juga pemilih Font
+
                 if (elemen.className.includes('teks') || elemen.className.includes('tombol')) {
                      document.getElementById('kontrol-font').style.display = 'flex';
-                     // Sinkronkan pemilih font dengan font elemen saat ini
                      let familySaatIni = window.getComputedStyle(elemen).fontFamily;
-                     // Logika sederhana untuk mencocokkan font
                      if (familySaatIni.includes('Times')) document.getElementById('input-font').value = "'Times New Roman', serif";
                      else if (familySaatIni.includes('Courier')) document.getElementById('input-font').value = "'Courier New', monospace";
                      else if (familySaatIni.includes('Verdana')) document.getElementById('input-font').value = "Verdana, sans-serif";
                      else if (familySaatIni.includes('Comic')) document.getElementById('input-font').value = "'Comic Sans MS', cursive";
                      else document.getElementById('input-font').value = "Arial, sans-serif";
+                }
+            } 
+            if (elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio') || elemen.className.includes('tombol')) {
+                document.getElementById('kontrol-gambar').style.display = 'flex';
+                let labelUrl = document.getElementById('label-url');
+
+                if (elemen.className.includes('tombol')) {
+                    labelUrl.innerText = "Link Tujuan:";
+                    document.getElementById('input-url-gambar').value = elemen.dataset.url || "";
+                } else if (elemen.className.includes('video')) {
+                    labelUrl.innerText = "URL Video:";
+                    let iframe = elemen.querySelector('iframe');
+                    document.getElementById('input-url-gambar').value = iframe ? iframe.src : "";
+                } else if (elemen.className.includes('audio')) {
+                    labelUrl.innerText = "URL Audio:";
+                    let audio = elemen.querySelector('audio');
+                    document.getElementById('input-url-gambar').value = (audio && audio.src) ? audio.src : "";
+                } else {
+                    labelUrl.innerText = "URL Gambar:";
+                    let bgImg = elemen.style.backgroundImage;
+                    document.getElementById('input-url-gambar').value = bgImg !== "none" ? bgImg.slice(5, -2) : "";
                 }
             } 
             if (elemen.className.includes('kotak')) {
@@ -625,6 +641,13 @@
             simpanDiamDiam();
         }
 
+        function ubahFont() {
+            if (!komponenTerpilih) return;
+            let fontBaru = document.getElementById('input-font').value;
+            komponenTerpilih.style.fontFamily = fontBaru;
+            simpanDiamDiam();
+        }
+
         function ubahRumus() {
             if (!komponenTerpilih || komponenTerpilih.dataset.jenis !== 'rumus') return;
             let teksLatex = document.getElementById('input-latex').value;
@@ -654,22 +677,12 @@
             posisikanMenu(komponenTerpilih); 
         }
 
-        // FITUR BARU: Fungsi untuk mengubah font (jenis tulisan)
-        function ubahFont() {
-            if (!komponenTerpilih) return;
-            let fontBaru = document.getElementById('input-font').value;
-            komponenTerpilih.style.fontFamily = fontBaru;
-            simpanDiamDiam();
-            posisikanMenu(komponenTerpilih);
-        }
-
-        // Penggabungan Perubahan URL Gambar/Video/Audio/TOMBOL
         function ubahMedia() {
             if (!komponenTerpilih) return;
             let urlBaru = document.getElementById('input-url-gambar').value;
             
             if (komponenTerpilih.className.includes('tombol')) {
-                komponenTerpilih.dataset.url = urlBaru; // Simpan link ke tombol
+                komponenTerpilih.dataset.url = urlBaru; 
             } else if (komponenTerpilih.className.includes('video')) {
                 if (urlBaru) {
                     let embedUrl = urlBaru.includes('watch?v=') ? urlBaru.replace('watch?v=', 'embed/') : urlBaru;
@@ -731,7 +744,7 @@
                 latex: komponenTerpilih.dataset.latex,
                 terkunci: 'false',
                 url: komponenTerpilih.dataset.url || "",
-                fontFamily: window.getComputedStyle(komponenTerpilih).fontFamily // Ambil font saat duplikat
+                fontFamily: window.getComputedStyle(komponenTerpilih).fontFamily
             };
             
             tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily);
@@ -761,7 +774,7 @@
             simpanDiamDiam();
         }
 
-        // --- Kontrol Keyboard (Perbaikan Cilukba Menu) ---
+        // --- Kontrol Keyboard ---
         document.addEventListener('keydown', function(e) {
             if (modePratinjau) return;
             const activeEl = document.activeElement;
@@ -789,24 +802,22 @@
                     komponenTerpilih.style.top = top + 'px';
                     komponenTerpilih.style.left = left + 'px';
                     
-                    // Sembunyikan menu secara instan selama jari memencet panah
                     document.getElementById('menu-mengambang').style.opacity = '0';
                     document.getElementById('menu-mengambang').style.pointerEvents = 'none';
                 }
             }
         });
 
-        // Deteksi jari dilepas dari keyboard untuk memunculkan menu lagi
         document.addEventListener('keyup', function(e) {
             if (modePratinjau) return;
             if (komponenTerpilih && e.key.includes('Arrow')) {
                 clearTimeout(timerKeyboard);
-                simpanDiamDiam(); // Simpan koordinat baru
+                simpanDiamDiam(); 
                 timerKeyboard = setTimeout(() => {
                     posisikanMenu(komponenTerpilih);
                     document.getElementById('menu-mengambang').style.opacity = '1';
                     document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
-                }, 200); // Menu muncul halus setelah berhenti pencet selama 0.2 detik
+                }, 200); 
             }
         });
 
@@ -873,7 +884,7 @@
                         latex: elemen.dataset.latex,
                         terkunci: elemen.dataset.terkunci || 'false',
                         url: elemen.dataset.url || "",
-                        fontFamily: elemen.style.fontFamily // Simpan data font
+                        fontFamily: elemen.style.fontFamily 
                     });
                 }
             }
