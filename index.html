@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sirius Web Builder - Editor</title>
+    <title>Sirius Web Builder - Pro Editor</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 
     <style>
         body { 
@@ -14,7 +14,6 @@
             background-color: #0b0c10; color: #c5c6c7; overflow: hidden;
         }
         
-        /* -- PANEL KIRI -- */
         #sidebar-kiri { 
             width: 250px; background: #1f2833; padding: 20px; 
             border-right: 2px solid #66fcf1; box-shadow: 2px 0 10px rgba(0,0,0,0.5);
@@ -31,62 +30,32 @@
         }
         .btn-aksi-panel:hover { background: #66fcf1; color: #0b0c10; }
         
-        /* -- MANAJEMEN HALAMAN CSS -- */
-        .item-halaman {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #2c3e50; padding: 5px 10px; border-radius: 5px; border: 1px solid transparent;
-            transition: 0.3s; margin-bottom: 5px;
-        }
-        .item-halaman:hover { border-color: #45a29e; cursor: pointer; }
-        .item-halaman.aktif {
-            border-color: #66fcf1; background: rgba(102, 252, 241, 0.1);
-        }
-        .item-halaman input {
-            background: transparent; border: none; color: #c5c6c7; font-family: inherit; width: 80%; outline: none; cursor: pointer;
-        }
-        .item-halaman.aktif input { color: #66fcf1; font-weight: bold; cursor: text; }
-
-        /* -- PEMBUNGKUS KANVAS -- */
         #kanvas-wrapper {
             flex-grow: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; background-color: #0b0c10;
         }
 
-        /* UI TETAP (Fixed UI) */
-        #btn-buka-panel {
-            position: absolute; top: 20px; left: 20px; background: #1f2833;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5); width: auto; z-index: 1000; display: none;
+        #top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #1f2833; border-bottom: 2px solid #45a29e;
+            padding: 10px 20px; z-index: 1000; flex-shrink: 0;
         }
+        .top-bar-left { width: 150px; display: flex; align-items: center; }
+        .top-bar-center { flex-grow: 1; display: flex; justify-content: center; }
+        .top-bar-right { width: 150px; display: flex; justify-content: flex-end; align-items: center; }
+
+        #btn-buka-panel { display: none; width: auto; margin-bottom: 0; }
 
         #nama-desain-container {
-            background: rgba(11, 12, 16, 0.5); padding: 8px 10px; border-radius: 5px;
+            background: rgba(11, 12, 16, 0.8); padding: 8px 20px; border-radius: 30px;
             border: 1px solid #45a29e; display: flex; align-items: center; gap: 10px;
-            margin-bottom: 15px;
         }
         #nama-desain-container input {
             background: transparent; border: none; color: #66fcf1; font-size: 16px;
-            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 100%;
+            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 250px;
         }
         #nama-desain-container input::placeholder { color: #45a29e; }
 
-        /* FITUR BARU: Toolbar Simulator Perangkat */
-        #toolbar-perangkat {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 1000; background: #1f2833; padding: 5px 15px; 
-            border-radius: 20px; border: 1px solid #45a29e; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-        #toolbar-perangkat button {
-            background: transparent; border: none; color: #c5c6c7; cursor: pointer; 
-            font-weight: bold; padding: 5px 10px; border-radius: 10px; transition: 0.3s; font-size: 14px;
-        }
-        #toolbar-perangkat button:hover, #toolbar-perangkat button.aktif { 
-            background: #45a29e; color: #0b0c10; 
-        }
-
-        #status-simpan {
-            position: absolute; top: 20px; right: 20px; background: rgba(31, 40, 51, 0.8);
-            color: #27ae60; padding: 8px 15px; border-radius: 20px; font-size: 14px;
-            font-weight: bold; z-index: 1000; transition: all 0.3s ease;
-        }
+        #status-simpan { color: #27ae60; font-size: 14px; font-weight: bold; transition: all 0.3s ease; }
         
         #btn-pratinjau {
             position: absolute; bottom: 30px; right: 30px; background: #f39c12; color: #fff;
@@ -95,19 +64,29 @@
         }
         #btn-pratinjau:hover { background: #e67e22; transform: scale(1.05); }
 
-        /* -- AREA KANVAS -- */
         #canvas { 
             flex-grow: 1; overflow-y: auto; overflow-x: hidden; position: relative; 
             scroll-behavior: smooth;
         }
         
         #ruang-kerja {
-            width: 100%; min-height: 2000px; position: relative; background-color: transparent;
+            width: 100%; min-height: 2000px; position: relative; background-color: transparent; overflow-x: hidden;
+            user-select: none;
+        }
+
+        #grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; display: none;
+        }
+        #grid-overlay.aktif {
+            display: block !important;
+            background-image: 
+                linear-gradient(to right, rgba(102, 252, 241, 0.15) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(102, 252, 241, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
 
         .teks-kanvas { color: #66fcf1; opacity: 0.1; text-align: center; padding-top: 20%; font-size: 2em; user-select: none; z-index: 0; pointer-events: none;}
 
-        /* -- MENU MENGAMBANG -- */
         #menu-mengambang {
             position: absolute; background: #1f2833; border: 2px solid #66fcf1;
             border-radius: 8px; padding: 12px; display: none; flex-direction: column; gap: 10px;
@@ -123,7 +102,7 @@
         .kontrol-item label { color: #c5c6c7; font-size: 12px; font-weight: bold; }
         
         #menu-mengambang input[type="color"] { width: 30px; height: 30px; padding: 0; border: none; cursor: pointer; border-radius: 5px; background: none; }
-        #menu-mengambang input[type="number"], #menu-mengambang input[type="text"], #menu-mengambang select {
+        #menu-mengambang input[type="number"], #menu-mengambang input[type="text"], #menu-mengambang select, #menu-mengambang input[type="range"] {
             padding: 5px; border-radius: 5px; border: none; background: #0b0c10; color: #66fcf1; font-size: 12px; font-family: inherit;
         }
         #menu-mengambang input[type="number"] { width: 60px; }
@@ -134,8 +113,11 @@
         .btn-mini-hapus { background: #c0392b; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px; transition: 0.3s; margin-left: auto;}
         .btn-mini-hapus:hover { background: #e74c3c; }
 
-        /* Editor LaTeX */
-        #kontrol-rumus textarea {
+        /* Gaya Khusus Fitur Alignment (Perataan) */
+        .btn-align { background: transparent; color: #f39c12; border: 1px solid #f39c12; border-radius: 5px; padding: 4px 8px; cursor: pointer; font-size: 12px; transition: 0.2s;}
+        .btn-align:hover { background: #f39c12; color: #0b0c10; }
+
+        #kontrol-rumus textarea, #kontrol-embed textarea {
             width: 100%; box-sizing: border-box; background: #0b0c10; color: #f39c12;
             border: 1px solid #45a29e; border-radius: 5px; padding: 8px; font-family: monospace;
             resize: vertical; font-size: 14px; margin-top: 5px;
@@ -143,50 +125,87 @@
         .grid-simbol { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; max-width: 320px;}
         .grid-simbol button { flex: 1 1 12%; padding: 4px; font-size: 12px;}
 
-        /* -- GAYA TOMBOL MENU KIRI -- */
         .grup-tombol { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .pembatas-menu { border-top: 1px solid #45a29e; margin: 15px 0; padding-top: 15px; color: #45a29e; font-size: 14px; font-weight: bold; }
         .btn { background: #66fcf1; color: #0b0c10; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn:hover { background: #45a29e; color: white; }
         .btn-matematika { background: #f39c12; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
         .btn-matematika:hover { background: #e67e22; }
+        .btn-embed { background: #e67e22; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-embed:hover { background: #d35400; }
         
         .area-sistem { margin-top: auto; padding-top: 20px; }
-        .btn-sistem { background: #27ae60; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-sistem { background: #27ae60; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; width: 100%; box-sizing: border-box;}
         .btn-sistem:hover { background: #2ecc71; }
-        .btn-bahaya { background: #c0392b; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-bahaya { background: #c0392b; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; width: 100%; box-sizing: border-box;}
         .btn-bahaya:hover { background: #e74c3c; }
+
+        .item-halaman { background: #2c3e50; padding: 8px 10px; border-radius: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; margin-bottom: 5px;}
+        .item-halaman:hover { background: #45a29e; color: #0b0c10; }
+        .item-halaman.aktif { background: #66fcf1; color: #0b0c10; font-weight: bold; border-left: 4px solid #f39c12; }
+        .btn-hapus-halaman { background: transparent; border: none; color: inherit; cursor: pointer; font-size: 16px; opacity: 0.7; padding: 0 5px;}
+        .btn-hapus-halaman:hover { opacity: 1; color: #c0392b; }
 
         .komponen-aktif { outline: none !important; box-shadow: 0 0 0 3px #f39c12, 0 5px 15px rgba(0,0,0,0.5) !important; z-index: 1500 !important; }
         .komponen-terkunci.komponen-aktif { box-shadow: 0 0 0 3px #c0392b, 0 5px 15px rgba(0,0,0,0.5) !important; }
+        .komponen-grup-aktif { outline: none !important; box-shadow: 0 0 0 3px #3498db, 0 5px 15px rgba(0,0,0,0.5) !important; z-index: 1500 !important; }
 
-        /* -- GAYA KOMPONEN KANVAS -- */
-        .elemen-kotak { width: 100px; height: 100px; background: #45a29e; position: absolute; border: 2px solid #66fcf1; border-radius: 0px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); resize: both; overflow: hidden; }
-        .elemen-teks { position: absolute; color: #ffffff; font-size: 24px; padding: 5px 10px; border: 1px dashed transparent; min-width: 50px; }
+        .elemen-kotak, .elemen-teks, .elemen-gambar, .elemen-video, .elemen-audio, .elemen-tombol, .elemen-rumus, .elemen-embed {
+            position: absolute; max-width: 90vw !important; box-sizing: border-box; word-wrap: break-word; 
+        }
+
+        .elemen-kotak { width: 100px; height: 100px; background: #45a29e; border: 2px solid #66fcf1; border-radius: 0px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); resize: both; overflow: hidden; }
+        .elemen-teks { color: #ffffff; font-size: 24px; padding: 5px 10px; border: 1px dashed transparent; min-width: 50px; }
         .elemen-teks:hover { cursor: grab; border: 1px dashed #66fcf1; }
-        .elemen-gambar { position: absolute; width: 150px; height: 100px; background-color: #2c3e50; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
-        
-        .elemen-video { position: absolute; width: 250px; height: 150px; background-color: #000; border: 2px solid #f39c12; display: flex; justify-content: center; align-items: center; color: #fff; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
+        .elemen-gambar { width: 150px; height: 100px; background-color: #2c3e50; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; color: #66fcf1; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
+        .elemen-video { width: 250px; height: 150px; background-color: #000; border: 2px solid #f39c12; display: flex; justify-content: center; align-items: center; color: #fff; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
         .elemen-video iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
-        
-        .elemen-audio { position: absolute; width: 280px; height: 60px; background-color: #1f2833; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; border-radius: 30px; resize: horizontal; overflow: hidden; }
+        .elemen-audio { width: 280px; height: 60px; background-color: #1f2833; border: 2px solid #66fcf1; display: flex; justify-content: center; align-items: center; border-radius: 30px; resize: horizontal; overflow: hidden; }
         .elemen-audio audio { width: 95%; height: 40px; outline: none; pointer-events: none; }
-        .placeholder-media { position: absolute; font-size: 12px; color: #66fcf1; pointer-events: none; }
+        .placeholder-media { position: absolute; font-size: 12px; color: #66fcf1; pointer-events: none; text-align: center; padding: 10px;}
+        .elemen-tombol { background: #66fcf1; color: #0b0c10; padding: 10px 20px; border-radius: 20px; font-weight: bold; text-align: center; min-width: 80px; }
+        .elemen-rumus { color: #f39c12; font-size: 32px; padding: 10px 15px; min-width: 50px; background: rgba(243, 156, 18, 0.1); border-radius: 5px; cursor: grab; }
+        .elemen-embed { width: 300px; height: 200px; background-color: #1f2833; border: 2px dashed #f39c12; display: flex; justify-content: center; align-items: center; color: #f39c12; border-radius: 8px; font-size: 12px; resize: both; overflow: hidden; }
+        .elemen-embed .embed-content { width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+        .elemen-embed .embed-content iframe, .elemen-embed .embed-content * { width: 100%; height: 100%; border: none; }
 
-        .elemen-tombol { position: absolute; background: #66fcf1; color: #0b0c10; padding: 10px 20px; border-radius: 20px; font-weight: bold; text-align: center; min-width: 80px; }
-        .elemen-rumus { position: absolute; color: #f39c12; font-size: 32px; padding: 10px 15px; min-width: 50px; background: rgba(243, 156, 18, 0.1); border-radius: 5px; cursor: grab; }
+        /* SMART GUIDES & SELECTION BOX */
+        #guide-v { position: absolute; width: 1px; height: 100%; background: #e74c3c; z-index: 9999; display: none; pointer-events: none; top: 0; box-shadow: 0 0 5px #e74c3c;}
+        #guide-h { position: absolute; height: 1px; width: 100%; background: #e74c3c; z-index: 9999; display: none; pointer-events: none; left: 0; box-shadow: 0 0 5px #e74c3c;}
+        #selection-box { position: absolute; border: 1px solid #3498db; background: rgba(52, 152, 219, 0.2); z-index: 9999; pointer-events: none; display: none; }
 
         #notifikasi { position: fixed; bottom: 20px; left: 20px; background: #27ae60; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; z-index: 3000; }
 
-        /* -- MODE PRATINJAU (PREVIEW) -- */
+        /* ANIMASI PREVIEW */
+        .mode-pratinjau .anim-hidden { opacity: 0; }
+        .mode-pratinjau .anim-fade { animation: animFadeIn 0.8s ease forwards; }
+        .mode-pratinjau .anim-slide-up { animation: animSlideUp 0.8s ease forwards; }
+        .mode-pratinjau .anim-zoom { animation: animZoomIn 0.8s ease forwards; }
+        @keyframes animFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes animSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes animZoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+        /* -- MODE PRATINJAU -- */
+        .mode-pratinjau #grid-overlay { display: none !important; }
         .mode-pratinjau .teks-kanvas { display: none !important; }
-        .mode-pratinjau .komponen-aktif { box-shadow: none !important; }
-        .mode-pratinjau .elemen-kotak, .mode-pratinjau .elemen-gambar, .mode-pratinjau .elemen-video, .mode-pratinjau .elemen-audio { border: none !important; resize: none !important; }
+        .mode-pratinjau .komponen-aktif, .mode-pratinjau .komponen-grup-aktif { box-shadow: none !important; }
+        .mode-pratinjau .elemen-kotak, .mode-pratinjau .elemen-gambar, .mode-pratinjau .elemen-video, .mode-pratinjau .elemen-audio, .mode-pratinjau .elemen-embed { border: none !important; resize: none !important; }
         .mode-pratinjau .elemen-teks:hover { border: 1px dashed transparent !important; cursor: default !important; }
         .mode-pratinjau .elemen-rumus { background: transparent !important; cursor: default !important; }
-        .mode-pratinjau .elemen-video iframe, .mode-pratinjau .elemen-audio audio { pointer-events: auto !important; }
+        .mode-pratinjau .elemen-video iframe, .mode-pratinjau .elemen-audio audio, .mode-pratinjau .elemen-embed .embed-content { pointer-events: auto !important; } 
+        .mode-pratinjau .elemen-embed { background: transparent !important; }
         .mode-pratinjau .elemen-tombol { cursor: pointer !important; transition: 0.2s; }
         .mode-pratinjau .elemen-tombol:hover { transform: scale(1.05); }
+
+        @media (max-width: 768px) {
+            #sidebar-kiri { width: 100%; z-index: 3000; }
+            .sidebar-tersembunyi { margin-left: -100%; }
+            .top-bar-left, .top-bar-right { width: auto; }
+            #nama-desain-container input { width: 120px; font-size: 14px; }
+            #status-simpan { font-size: 12px; }
+            #top-bar { padding: 10px; }
+            #btn-pratinjau { bottom: 15px; right: 15px; padding: 10px 15px; font-size: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -195,16 +214,19 @@
         <button class="btn-aksi-panel" onclick="tutupPanelKiri()">⬅ Tutup Panel</button>
         <h2>🚀 Sirius Web</h2>
         
-        <div id="nama-desain-container">
-            <input type="text" id="nama-desain" placeholder="Nama Proyek Website..." oninput="simpanNamaDesain()">
+        <div class="pembatas-menu" style="margin-top: 0;">Manajemen Halaman</div>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <input type="text" id="input-nama-halaman" placeholder="Halaman baru..." style="flex-grow: 1; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; font-size: 12px;">
+            <button class="btn" onclick="buatHalamanBaru()" style="padding: 8px 12px;">+</button>
         </div>
-        
-        <!-- BAGIAN BARU: DAFTAR HALAMAN -->
-        <div class="pembatas-menu" style="margin-top: 10px;">Halaman Website</div>
-        <div id="daftar-halaman-ui" style="display: flex; flex-direction: column;"></div>
-        <button class="btn" onclick="tambahHalaman()" style="margin-top: 10px; margin-bottom: 20px; background: #3498db; color: white; border: none;">+ Halaman Baru</button>
+        <div id="daftar-halaman" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; max-height: 180px; overflow-y: auto;"></div>
 
-        <div class="pembatas-menu" style="margin-top: 0;">Dasar Universal</div>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <button class="btn-sistem" onclick="aksiUndo()" style="flex: 1; background: #f39c12; font-size: 12px;" id="btn-undo">↶ Undo</button>
+            <button class="btn-sistem" onclick="aksiRedo()" style="flex: 1; background: #34495e; font-size: 12px;" id="btn-redo">↷ Redo</button>
+        </div>
+
+        <div class="pembatas-menu">Dasar Universal</div>
         <div class="grup-tombol">
             <button class="btn" onclick="tambahKomponen('kotak')">+ Kotak</button>
             <button class="btn" onclick="tambahKomponen('teks')">+ Teks</button>
@@ -212,6 +234,7 @@
             <button class="btn" onclick="tambahKomponen('video')">+ Video</button>
             <button class="btn" onclick="tambahKomponen('audio')">+ Musik</button>
             <button class="btn" onclick="tambahKomponen('tombol')">+ Tombol</button>
+            <button class="btn-embed" onclick="tambahKomponen('embed')">+ Kode (Embed)</button>
         </div>
 
         <div class="pembatas-menu">Spesialis Edukasi</div>
@@ -220,6 +243,8 @@
         </div>
 
         <div class="pembatas-menu">Pengaturan Kanvas</div>
+        <button class="btn-aksi-panel" onclick="toggleGridKanvas()" id="btn-toggle-grid" style="margin-bottom:10px;">Tampilkan Grid Bantu</button>
+
         <div style="margin-bottom: 10px;">
             <label style="color: #c5c6c7; font-size: 12px; display: block; margin-bottom: 5px;">Warna Latar:</label>
             <input type="color" id="input-bg-kanvas" oninput="ubahLatarKanvas()" value="#0b0c10" style="width: 100%; height: 35px; padding: 0; border: none; border-radius: 5px; background: none; cursor: pointer;">
@@ -237,34 +262,42 @@
             <div class="pembatas-menu" style="margin-top: 0;">Sistem Penyimpanan</div>
             <div class="grup-tombol">
                 <button class="btn-sistem" onclick="simpanManual()">💾 Simpan Desain</button>
-                <button class="btn-sistem" onclick="eksporKeHTML()" style="background: #2980b9;">📥 Ekspor HTML</button>
-                <button class="btn-bahaya" onclick="bersihkanKanvas()">🗑 Bersihkan Kanvas</button>
+                <button class="btn-sistem" onclick="eksporHTML()" style="background: #8e44ad;">📦 Download Web</button>
+                <button class="btn-bahaya" onclick="bersihkanKanvas()">🗑 Bersihkan Halaman</button>
             </div>
         </div>
     </div>
 
-    <!-- PEMBUNGKUS UTAMA UNTUK SCROLLING -->
     <div id="kanvas-wrapper">
-        <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Buka Panel</button>
-        
-        <!-- FITUR BARU: Toolbar Simulator Perangkat -->
-        <div id="toolbar-perangkat">
-            <button class="btn-perangkat aktif" onclick="ubahLebarKanvas('100%', this)">💻 Desktop</button>
-            <button class="btn-perangkat" onclick="ubahLebarKanvas('768px', this)">📱 Tablet</button>
-            <button class="btn-perangkat" onclick="ubahLebarKanvas('375px', this)">📱 HP</button>
+        <div id="top-bar">
+            <div class="top-bar-left">
+                <button id="btn-buka-panel" class="btn-aksi-panel" onclick="bukaPanelKiri()">☰ Menu</button>
+            </div>
+            <div class="top-bar-center">
+                <div id="nama-desain-container">
+                    <input type="text" id="nama-desain" placeholder="Nama Website..." oninput="simpanNamaDesain()">
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div id="status-simpan">✅ Tersimpan otomatis</div>
+            </div>
         </div>
 
-        <div id="status-simpan">✅ Tersimpan otomatis</div>
         <button id="btn-pratinjau" onclick="togglePratinjau()">👁️ Pratinjau</button>
 
-        <div id="canvas" onclick="klikAreaKosong(event)">
+        <div id="canvas">
             <div id="ruang-kerja">
-                <div class="teks-kanvas">Ruang Kerja Inti<br><span style="font-size: 16px; opacity: 0.6;">(Scroll ke bawah untuk ruang yang lebih luas)</span></div>
+                <div id="grid-overlay"></div>
+                <div class="teks-kanvas">Ruang Kerja Inti<br><span style="font-size: 16px; opacity: 0.6;">(Scroll ke bawah untuk ruang ekstra)</span></div>
                 
+                <div id="guide-v"></div>
+                <div id="guide-h"></div>
+                <div id="selection-box"></div>
+
                 <div id="menu-mengambang">
                     <div class="baris-kontrol">
                         <div class="kontrol-item" id="kontrol-warna">
-                            <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Ubah Warna">
+                            <input type="color" id="input-warna" oninput="ubahWarna('picker')" title="Warna Utama">
                             <input type="text" id="input-warna-hex" placeholder="#FFFFFF" oninput="ubahWarna('hex')" style="width: 70px;">
                         </div>
                         
@@ -300,15 +333,59 @@
                         <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
                     </div>
 
-                    <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%;">
-                        <label id="label-url" style="width: 70px;">URL Link:</label>
-                        <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
+                    <!-- FITUR BARU: AUTO ALIGNMENT UNTUK GRUP -->
+                    <div class="baris-kontrol" id="kontrol-alignment" style="display: none; width: 100%; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
+                        <label style="color: #f39c12; font-size: 12px; font-weight: bold; width: 100%;">📏 Ratakan Elemen (Align):</label>
+                        <button class="btn-align" onclick="ratakanGrup('kiri')" title="Rata Kiri">⇤ Kiri</button>
+                        <button class="btn-align" onclick="ratakanGrup('tengah-x')" title="Rata Tengah Horizontal">⇥ Tengah ⇤</button>
+                        <button class="btn-align" onclick="ratakanGrup('kanan')" title="Rata Kanan">Kanan ⇥</button>
+                        <button class="btn-align" onclick="ratakanGrup('atas')" title="Rata Atas">⇡ Atas</button>
+                        <button class="btn-align" onclick="ratakanGrup('tengah-y')" title="Rata Tengah Vertikal">Midd</button>
+                        <button class="btn-align" onclick="ratakanGrup('bawah')" title="Rata Bawah">⇣ Bawah</button>
                     </div>
 
-                    <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px;">
+                    <div class="baris-kontrol" id="kontrol-efek" style="width: 100%; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
+                        <div class="kontrol-item" id="kontrol-animasi">
+                            <label title="Animasi Saat Scroll">Animasi:</label>
+                            <select id="input-animasi" onchange="ubahAnimasi()" style="width: 80px;">
+                                <option value="">Tidak ada</option>
+                                <option value="fade">Pudar (Fade)</option>
+                                <option value="slide-up">Naik (Slide)</option>
+                                <option value="zoom">Membesar</option>
+                            </select>
+                        </div>
+                        <div class="kontrol-item">
+                            <label title="Transparansi">Buram:</label>
+                            <input type="range" id="input-opasitas" min="0.1" max="1" step="0.1" value="1" oninput="ubahEfekDesain()" style="width: 60px;">
+                        </div>
+                        <div class="kontrol-item">
+                            <label title="Ketebalan Bayangan">Bayangan:</label>
+                            <input type="number" id="input-bayangan" min="0" max="50" value="0" oninput="ubahEfekDesain()" style="width: 40px;">
+                        </div>
+                        <div class="kontrol-item" id="kontrol-gradasi-warna" style="display: none;">
+                            <label title="Warna Kedua untuk Gradasi">Warna 2:</label>
+                            <input type="color" id="input-warna2" oninput="ubahEfekDesain()" value="#000000">
+                            <input type="checkbox" id="cek-gradasi" onchange="ubahEfekDesain()"> <label>Gradasi</label>
+                        </div>
+                    </div>
+
+                    <div class="baris-kontrol" id="kontrol-gambar" style="display: none; width: 100%; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px; flex-direction: column; align-items: flex-start;">
+                        <div style="display: flex; width: 100%; align-items: center; gap: 5px;">
+                            <label id="label-url" style="width: 70px;">URL Link:</label>
+                            <input type="text" id="input-url-gambar" placeholder="Tempel link di sini..." oninput="ubahMedia()" style="flex-grow: 1;">
+                        </div>
+                        <small id="bantuan-url" style="color:#66fcf1; font-size:10px; line-height:1.4;">Info Link Eksternal</small>
+                    </div>
+
+                    <div id="kontrol-embed" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
+                        <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Kode HTML/Embed (Maps, Form, Widget, dll):</label>
+                        <small style="color:#66fcf1; font-size:10px; line-height:1.4;">*Tempel tag &lt;iframe&gt; murni dari sumber seperti Google Maps, Spotify, Kalender, X (Twitter), dll.</small>
+                        <textarea id="input-embed" rows="4" placeholder="Tempel kode <iframe> atau HTML di sini..." oninput="ubahEmbed()" style="width: 100%; box-sizing: border-box; background: #0b0c10; color: #66fcf1; border: 1px solid #45a29e; border-radius: 5px; padding: 8px; font-family: monospace; font-size: 12px; margin-top: 5px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
                         <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
                         <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
-                        
                         <div class="grid-simbol">
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{a}{b}')" title="Pecahan">a/b</button>
@@ -317,10 +394,8 @@
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{a}^{b}')" title="Integral">∫</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{i=1}^{n}')" title="Sigma">∑</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{x \\to \\infty}')" title="Limit">lim</button>
-                            
-                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks 3x3 ]</button>
-                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
-
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\\\\\ d & e & f \\\\\\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks ]</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\\\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\beta')" title="Beta">β</button>
@@ -341,189 +416,268 @@
     <div id="notifikasi">Desain berhasil disimpan!</div>
 
     <script>
-        // --- INISIALISASI ---
-        let daftarHalaman = [];
-        let halamanAktif = 'page_1';
+        let databaseHalaman = {};
+        let idHalamanAktif = 'beranda';
         let dataDesainTerakhir = "";
         let komponenTerpilih = null;
         let modePratinjau = false;
         let timerKeyboard; 
-        let isMemuatHalaman = false; // Kunci Perbaikan Bug Macet
+
+        let riwayatSistem = [];
+        let indexRiwayat = -1;
+        let isMerekamRiwayat = true;
+
+        let grupTerpilih = []; // Koleksi elemen multi-seleksi
 
         window.onload = function() {
-            muatDesain();
+            muatDesainGlobal();
+            initSelectionBox(); 
             setInterval(simpanDiamDiam, 1000); 
+            setTimeout(() => { simpanDiamDiam(true); }, 500);
         };
 
-        // --- SISTEM MANAJEMEN HALAMAN ---
-        function renderDaftarHalaman() {
-            let container = document.getElementById('daftar-halaman-ui');
-            if(!container) return; // Mencegah error jika div belum ada
-            container.innerHTML = '';
-            
-            daftarHalaman.forEach(hal => {
-                let div = document.createElement('div');
-                div.className = `item-halaman ${hal.id === halamanAktif ? 'aktif' : ''}`;
-                div.onclick = (e) => { if(e.target.tagName !== 'INPUT') pindahHalaman(hal.id); };
-                
-                div.innerHTML = `
-                    <input type="text" value="${hal.nama}" onchange="ubahNamaHalaman('${hal.id}', this.value)" ${hal.id !== halamanAktif ? 'readonly' : ''} title="Ubah nama halaman">
-                    ${daftarHalaman.length > 1 ? `<span onclick="hapusHalaman(event, '${hal.id}')" style="cursor:pointer;" title="Hapus">❌</span>` : ''}
-                `;
-                container.appendChild(div);
-            });
+        // --- FUNGSI UNDO REDO ---
+        function rekamRiwayatSistem(stateString) {
+            if(!isMerekamRiwayat) return;
+            if(indexRiwayat >= 0 && riwayatSistem[indexRiwayat] === stateString) return;
+            if(indexRiwayat < riwayatSistem.length - 1) riwayatSistem = riwayatSistem.slice(0, indexRiwayat + 1);
+            riwayatSistem.push(stateString);
+            indexRiwayat++;
+            if(riwayatSistem.length > 30) { riwayatSistem.shift(); indexRiwayat--; }
+            perbaruiTombolUndoRedo();
         }
 
-        function tambahHalaman() {
-            simpanDiamDiam(true); 
-            
-            let idBaru = 'page_' + Date.now();
-            daftarHalaman.push({
-                id: idBaru,
-                nama: 'Halaman ' + (daftarHalaman.length + 1),
-                komponen: [],
-                latar: { warna: '#0b0c10', gambar: '', tinggi: '2000' }
-            });
-            
-            pindahHalaman(idBaru);
-        }
-
-        function pindahHalaman(idTarget) {
-            if(halamanAktif === idTarget) return;
-            simpanDiamDiam(true); 
-            muatHalamanKeKanvas(idTarget);
-        }
-
-        function hapusHalaman(e, idTarget) {
-            e.stopPropagation();
-            if(daftarHalaman.length <= 1) return alert("Minimal harus ada 1 halaman!");
-            if(confirm("Yakin ingin menghapus halaman ini?")) {
-                daftarHalaman = daftarHalaman.filter(h => h.id !== idTarget);
-                if(halamanAktif === idTarget) {
-                    muatHalamanKeKanvas(daftarHalaman[0].id);
-                } else {
-                    renderDaftarHalaman();
-                    simpanDiamDiam(true);
-                }
+        function aksiUndo() {
+            if(indexRiwayat > 0) {
+                indexRiwayat--;
+                pulihkanKeRiwayat(riwayatSistem[indexRiwayat]);
+                let status = document.getElementById('status-simpan');
+                status.innerText = "↶ Undo Berhasil"; status.style.color = "#f39c12";
             }
         }
 
-        function ubahNamaHalaman(id, namaBaru) {
-            let hal = daftarHalaman.find(h => h.id === id);
-            if(hal) hal.nama = namaBaru || 'Tanpa Nama';
-            simpanDiamDiam(true);
+        function aksiRedo() {
+            if(indexRiwayat < riwayatSistem.length - 1) {
+                indexRiwayat++;
+                pulihkanKeRiwayat(riwayatSistem[indexRiwayat]);
+                let status = document.getElementById('status-simpan');
+                status.innerText = "↷ Redo Berhasil"; status.style.color = "#f39c12";
+            }
         }
 
-        function muatHalamanKeKanvas(id) {
-            halamanAktif = id;
+        function pulihkanKeRiwayat(stateString) {
+            isMerekamRiwayat = false; 
             tutupMenuMengambang();
+            bersihkanGrup();
+            databaseHalaman = JSON.parse(stateString);
+            if(!databaseHalaman[idHalamanAktif]) idHalamanAktif = Object.keys(databaseHalaman)[0];
+            localStorage.setItem('SiriusWebDataGlobal', stateString); 
+            renderDaftarHalaman();
+            renderKanvasAktif();
+            perbaruiTombolUndoRedo();
+            setTimeout(() => { isMerekamRiwayat = true; }, 100); 
+        }
 
-            let halaman = daftarHalaman.find(h => h.id === id);
-            if(!halaman) return;
+        function perbaruiTombolUndoRedo() {
+            document.getElementById('btn-undo').disabled = (indexRiwayat <= 0);
+            document.getElementById('btn-redo').disabled = (indexRiwayat >= riwayatSistem.length - 1);
+        }
 
-            isMemuatHalaman = true; // Mencegah auto-save berulang saat render (Solusi Macet)
+        // --- MANAJEMEN HALAMAN ---
+        function muatDesainGlobal() {
+            let savedName = localStorage.getItem('SiriusWebProjectName');
+            if (savedName) document.getElementById('nama-desain').value = savedName;
 
+            let dataGlobal = localStorage.getItem('SiriusWebDataGlobal');
+            if (dataGlobal) {
+                try {
+                    databaseHalaman = JSON.parse(dataGlobal);
+                    if (Object.keys(databaseHalaman).length === 0) throw new Error("Kosong");
+                } catch(e) { inisialisasiHalamanDefault(); }
+            } else {
+                let dataLama = localStorage.getItem('SiriusWebSaveData');
+                let bgLama = localStorage.getItem('SiriusWebBgInputs');
+                let elemenLama = dataLama ? JSON.parse(dataLama) : [];
+                let pengaturanLama = bgLama ? JSON.parse(bgLama) : { warna: "#0b0c10", gambar: "", tinggi: "2000" };
+                databaseHalaman = { 'beranda': { nama: 'Beranda', elemen: elemenLama, pengaturan: pengaturanLama } };
+            }
+            if (!databaseHalaman[idHalamanAktif]) idHalamanAktif = Object.keys(databaseHalaman)[0];
+            renderDaftarHalaman();
+            renderKanvasAktif();
+        }
+
+        function inisialisasiHalamanDefault() {
+            databaseHalaman = { 'beranda': { nama: 'Beranda', elemen: [], pengaturan: { warna: "#0b0c10", gambar: "", tinggi: "2000" } } };
+            idHalamanAktif = 'beranda';
+        }
+
+        function renderDaftarHalaman() {
+            let kontainer = document.getElementById('daftar-halaman');
+            kontainer.innerHTML = '';
+            for (let id in databaseHalaman) {
+                let hal = databaseHalaman[id];
+                let div = document.createElement('div');
+                div.className = 'item-halaman' + (id === idHalamanAktif ? ' aktif' : '');
+                div.innerHTML = `<span onclick="gantiHalaman('${id}')" style="flex-grow:1;">📄 ${hal.nama}</span>`;
+                if (id !== 'beranda') div.innerHTML += `<button class="btn-hapus-halaman" onclick="hapusHalaman('${id}')" title="Hapus">×</button>`;
+                kontainer.appendChild(div);
+            }
+        }
+
+        function buatHalamanBaru() {
+            let input = document.getElementById('input-nama-halaman');
+            let nama = input.value.trim();
+            if (!nama) return;
+            let idBaru = 'hal_' + Date.now();
+            databaseHalaman[idBaru] = { nama: nama, elemen: [], pengaturan: { warna: "#0b0c10", gambar: "", tinggi: "2000" } };
+            input.value = '';
+            gantiHalaman(idBaru);
+        }
+
+        function gantiHalaman(idTarget) {
+            if (idHalamanAktif === idTarget) return;
+            simpanDiamDiam(true);
+            tutupMenuMengambang();
+            bersihkanGrup();
+            idHalamanAktif = idTarget;
+            renderDaftarHalaman();
+            renderKanvasAktif();
+        }
+
+        function hapusHalaman(id) {
+            if (id === 'beranda') return; 
+            if (confirm(`Hapus permanen halaman "${databaseHalaman[id].nama}"?`)) {
+                delete databaseHalaman[id];
+                if (idHalamanAktif === id) idHalamanAktif = 'beranda';
+                simpanDiamDiam(true);
+                renderDaftarHalaman();
+                renderKanvasAktif();
+            }
+        }
+
+        function renderKanvasAktif() {
             let ruangKerja = document.getElementById('ruang-kerja');
-            let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
+            let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
             semuaKomponen.forEach(el => el.remove());
 
-            document.getElementById('input-bg-kanvas').value = halaman.latar.warna || '#0b0c10';
-            document.getElementById('input-bg-img-kanvas').value = halaman.latar.gambar || '';
-            document.getElementById('input-tinggi-kanvas').value = halaman.latar.tinggi || '2000';
+            let halAktif = databaseHalaman[idHalamanAktif];
+            document.getElementById('input-bg-kanvas').value = halAktif.pengaturan.warna || "#0b0c10";
+            document.getElementById('input-bg-img-kanvas').value = halAktif.pengaturan.gambar || "";
+            document.getElementById('input-tinggi-kanvas').value = halAktif.pengaturan.tinggi || "2000";
             
-            ruangKerja.style.backgroundColor = halaman.latar.warna || '#0b0c10';
-            ruangKerja.style.minHeight = (halaman.latar.tinggi || '2000') + 'px';
-            if (halaman.latar.gambar) {
-                ruangKerja.style.backgroundImage = `url('${halaman.latar.gambar}')`;
+            terapkanLatarKanvasDariUI();
+
+            if (halAktif.elemen) {
+                halAktif.elemen.forEach(item => {
+                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily, item.opasitas, item.bayangan, item.backgroundLengkap, item.embed, item.animasi, true);
+                });
+            }
+            dataDesainTerakhir = JSON.stringify(halAktif.elemen);
+        }
+
+        function ubahLatarKanvas() { terapkanLatarKanvasDariUI(); simpanDiamDiam(true); }
+
+        function terapkanLatarKanvasDariUI() {
+            let warna = document.getElementById('input-bg-kanvas').value;
+            let urlImg = document.getElementById('input-bg-img-kanvas').value;
+            let tinggiKanvas = document.getElementById('input-tinggi-kanvas').value;
+            let ruangKerja = document.getElementById('ruang-kerja');
+
+            ruangKerja.style.backgroundColor = warna;
+            ruangKerja.style.minHeight = tinggiKanvas + 'px';
+            if (urlImg) {
+                ruangKerja.style.backgroundImage = `url('${urlImg.replace(/"/g, '\\"')}')`;
                 ruangKerja.style.backgroundSize = "cover";
                 ruangKerja.style.backgroundPosition = "center";
-            } else {
-                ruangKerja.style.backgroundImage = "none";
-            }
-
-            halaman.komponen.forEach(item => {
-                tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily);
-            });
-
-            renderDaftarHalaman(); 
-            isMemuatHalaman = false; // Buka kembali auto-save
-            simpanDiamDiam(true); // Lakukan 1 kali save di akhir saja
-            dataDesainTerakhir = JSON.stringify(daftarHalaman); 
+            } else { ruangKerja.style.backgroundImage = "none"; }
         }
 
-        // --- SISTEM NAMA DESAIN ---
-        function simpanNamaDesain() {
-            let nama = document.getElementById('nama-desain').value;
-            localStorage.setItem('SiriusWebProjectName', nama);
-            simpanDiamDiam();
+        function toggleGridKanvas() {
+            let grid = document.getElementById('grid-overlay');
+            grid.classList.toggle('aktif');
+            document.getElementById('btn-toggle-grid').innerText = grid.classList.contains('aktif') ? "Sembunyikan Grid" : "Tampilkan Grid Bantu";
         }
 
-        // --- SISTEM MODE PRATINJAU ---
+        function simpanNamaDesain() { localStorage.setItem('SiriusWebProjectName', document.getElementById('nama-desain').value); simpanDiamDiam(); }
+
         function togglePratinjau() {
             modePratinjau = !modePratinjau;
             let canvas = document.getElementById('canvas');
             let sidebar = document.getElementById('sidebar-kiri');
-            let btnBuka = document.getElementById('btn-buka-panel');
-            let toolbarPerangkat = document.getElementById('toolbar-perangkat');
+            let topBar = document.getElementById('top-bar');
             let btnPreview = document.getElementById('btn-pratinjau');
 
             if (modePratinjau) {
                 tutupMenuMengambang();
+                bersihkanGrup();
                 sidebar.classList.add('sidebar-tersembunyi');
-                btnBuka.style.display = 'none';
-                toolbarPerangkat.style.display = 'none';
-                document.getElementById('status-simpan').style.display = 'none';
-                
+                topBar.style.display = 'none'; 
                 if(komponenTerpilih) komponenTerpilih.classList.remove('komponen-aktif');
                 canvas.classList.add('mode-pratinjau');
-                
-                btnPreview.innerText = '✏️ Keluar Pratinjau';
+                btnPreview.innerText = '✏️ Edit Lagi';
                 btnPreview.style.background = '#e74c3c';
-            } else {
-                btnBuka.style.display = 'block';
-                toolbarPerangkat.style.display = 'flex';
-                document.getElementById('status-simpan').style.display = 'block';
                 
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
+                semuaKomponen.forEach(el => {
+                    let anim = el.dataset.animasi;
+                    if(anim && anim !== "") {
+                        el.classList.add('anim-hidden');
+                        setTimeout(() => {
+                            if(anim === 'fade') el.classList.add('anim-fade');
+                            if(anim === 'slide-up') el.classList.add('anim-slide-up');
+                            if(anim === 'zoom') el.classList.add('anim-zoom');
+                            el.classList.remove('anim-hidden');
+                        }, 300);
+                    }
+                });
+
+            } else {
+                topBar.style.display = 'flex'; 
+                document.getElementById('btn-buka-panel').style.display = 'block'; 
                 canvas.classList.remove('mode-pratinjau');
                 btnPreview.innerText = '👁️ Pratinjau';
                 btnPreview.style.background = '#f39c12';
+                
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
+                semuaKomponen.forEach(el => {
+                    el.classList.remove('anim-hidden', 'anim-fade', 'anim-slide-up', 'anim-zoom');
+                });
             }
         }
 
-        function tutupPanelKiri() {
-            document.getElementById('sidebar-kiri').classList.add('sidebar-tersembunyi');
-            document.getElementById('btn-buka-panel').style.display = 'block';
-        }
-        function bukaPanelKiri() {
-            document.getElementById('sidebar-kiri').classList.remove('sidebar-tersembunyi');
-            document.getElementById('btn-buka-panel').style.display = 'none';
-        }
+        function tutupPanelKiri() { document.getElementById('sidebar-kiri').classList.add('sidebar-tersembunyi'); document.getElementById('btn-buka-panel').style.display = 'block'; }
+        function bukaPanelKiri() { document.getElementById('sidebar-kiri').classList.remove('sidebar-tersembunyi'); document.getElementById('btn-buka-panel').style.display = 'none'; }
 
         // --- SISTEM PEMBUATAN KOMPONEN ---
-        function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null) {
+        function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null, opasitasKustom = null, bayanganKustom = null, backgroundLengkapKustom = null, embedKustom = null, animasiKustom = null, isLoad = false) {
             let elemenBaru = document.createElement('div');
+            let canvasElement = document.getElementById('canvas');
+            let defaultTopPx = canvasElement.scrollTop + 150;
             
-            let scrollY = document.getElementById('canvas').scrollTop;
-            let defaultTop = posisiKustom ? posisiKustom.top : (150 + scrollY) + 'px';
-            let defaultLeft = posisiKustom ? posisiKustom.left : '350px';
-            
-            elemenBaru.style.top = defaultTop;
-            elemenBaru.style.left = defaultLeft;
+            elemenBaru.style.top = posisiKustom ? posisiKustom.top : defaultTopPx + 'px';
+            elemenBaru.style.left = posisiKustom ? posisiKustom.left : '35%';
             elemenBaru.style.zIndex = zIndexKustom;
             elemenBaru.dataset.terkunci = terkunciKustom;
             if (urlKustom) elemenBaru.dataset.url = urlKustom;
+            if (embedKustom) elemenBaru.dataset.embed = embedKustom;
+            if (animasiKustom) elemenBaru.dataset.animasi = animasiKustom;
             if (terkunciKustom === 'true') elemenBaru.classList.add('komponen-terkunci');
 
             if (lebarKustom) elemenBaru.style.width = lebarKustom;
             if (tinggiKustom) elemenBaru.style.height = tinggiKustom;
             if (radiusKustom) elemenBaru.style.borderRadius = radiusKustom;
             if (fontFamilyKustom) elemenBaru.style.fontFamily = fontFamilyKustom;
+            if (opasitasKustom) elemenBaru.style.opacity = opasitasKustom;
+            if (bayanganKustom) elemenBaru.style.boxShadow = bayanganKustom;
 
             switch(jenis) {
                 case 'kotak':
                     elemenBaru.className = 'elemen-kotak';
                     elemenBaru.dataset.jenis = 'kotak';
-                    if (warnaKustom) elemenBaru.style.backgroundColor = warnaKustom;
+                    if (backgroundLengkapKustom) { elemenBaru.style.background = backgroundLengkapKustom; } 
+                    else if (warnaKustom) { elemenBaru.style.backgroundColor = warnaKustom; }
                     break;
                 case 'teks':
                     elemenBaru.className = 'elemen-teks';
@@ -538,7 +692,7 @@
                     elemenBaru.innerText = isiKustom || "Area Gambar"; 
                     elemenBaru.dataset.jenis = 'gambar';
                     if (bgKustom && bgKustom !== "none") {
-                        elemenBaru.style.backgroundImage = bgKustom;
+                        elemenBaru.style.backgroundImage = `url("${bgKustom.replace(/"/g, '\\"')}")`;
                         elemenBaru.style.backgroundSize = "cover";
                         elemenBaru.style.backgroundPosition = "center";
                         elemenBaru.innerText = "";
@@ -550,25 +704,23 @@
                     if (bgKustom && bgKustom !== "none") {
                         let embedUrl = bgKustom.includes('watch?v=') ? bgKustom.replace('watch?v=', 'embed/') : bgKustom;
                         elemenBaru.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-                    } else {
-                        elemenBaru.innerHTML = `<div class="placeholder-media">Area Video</div>`;
-                    }
+                    } else { elemenBaru.innerHTML = `<div class="placeholder-media">Area Video</div>`; }
                     break;
                 case 'audio': 
                     elemenBaru.className = 'elemen-audio';
                     elemenBaru.dataset.jenis = 'audio';
+                    if (backgroundLengkapKustom) { elemenBaru.style.background = backgroundLengkapKustom; }
                     if (bgKustom && bgKustom !== "none") {
                         elemenBaru.innerHTML = `<audio src="${bgKustom}" controls></audio>`;
-                    } else {
-                        elemenBaru.innerHTML = `<div class="placeholder-media">🎵 Area Musik</div><audio controls style="display:none;"></audio>`;
-                    }
+                    } else { elemenBaru.innerHTML = `<div class="placeholder-media">🎵 Area Musik</div><audio controls style="display:none;"></audio>`; }
                     break;
                 case 'tombol':
                     elemenBaru.className = 'elemen-tombol';
                     elemenBaru.innerText = isiKustom || "Klik";
                     elemenBaru.contentEditable = "true"; 
                     elemenBaru.dataset.jenis = 'tombol';
-                    if (warnaKustom) elemenBaru.style.backgroundColor = warnaKustom;
+                    if (backgroundLengkapKustom) { elemenBaru.style.background = backgroundLengkapKustom; } 
+                    else if (warnaKustom) { elemenBaru.style.backgroundColor = warnaKustom; }
                     break;
                 case 'rumus':
                     elemenBaru.className = 'elemen-rumus';
@@ -576,18 +728,23 @@
                     elemenBaru.dataset.latex = latexKustom || "E = mc^2"; 
                     if (warnaKustom) elemenBaru.style.color = warnaKustom;
                     if (ukuranKustom) elemenBaru.style.fontSize = ukuranKustom;
-                    
                     if (typeof katex !== 'undefined') {
-                        katex.render(elemenBaru.dataset.latex, elemenBaru, { throwOnError: false });
+                        try { katex.render(elemenBaru.dataset.latex, elemenBaru, { throwOnError: false }); } 
+                        catch(e) { elemenBaru.innerText = elemenBaru.dataset.latex; }
+                    } else { elemenBaru.innerText = elemenBaru.dataset.latex; }
+                    break;
+                case 'embed':
+                    elemenBaru.className = 'elemen-embed';
+                    elemenBaru.dataset.jenis = 'embed';
+                    if (embedKustom && embedKustom.trim() !== "") {
+                        elemenBaru.innerHTML = `<div class="embed-content">${embedKustom}</div>`;
                     } else {
-                        elemenBaru.innerText = elemenBaru.dataset.latex;
+                        elemenBaru.innerHTML = `<div class="placeholder-media">🌐 Area Embed Kode</div><div class="embed-content" style="display:none;"></div>`;
                     }
                     break;
             }
 
-            if (elemenBaru.contentEditable === "true") {
-                elemenBaru.onkeyup = function() { simpanDiamDiam(); };
-            }
+            if (elemenBaru.contentEditable === "true") elemenBaru.onkeyup = function() { simpanDiamDiam(); };
 
             document.getElementById('ruang-kerja').appendChild(elemenBaru);
             buatBisaDigeserDanDiklik(elemenBaru);
@@ -600,98 +757,240 @@
                 simpanDiamDiam();
             };
             
-            simpanDiamDiam(); 
+            if(!isLoad) simpanDiamDiam(); 
+        }
+
+        // --- SISTEM LASSO SELECTION (KOTAK BIRU FIX) ---
+        function initSelectionBox() {
+            let canvas = document.getElementById('canvas');
+            let ruangKerja = document.getElementById('ruang-kerja');
+            let selBox = document.getElementById('selection-box');
+            let isDraggingBox = false;
+            let startX = 0, startY = 0;
+
+            canvas.addEventListener('mousedown', function(e) {
+                if(modePratinjau) return;
+                // Cegah seleksi aktif saat klik komponen / UI
+                if(e.target.closest('[data-jenis]') || e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container') || e.target.closest('#grid-overlay')) return;
+                
+                tutupMenuMengambang();
+                bersihkanGrup();
+                
+                // Murni berbasis bounding klien, tidak terpengaruh double-scroll
+                let rect = ruangKerja.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+                
+                selBox.style.left = startX + 'px';
+                selBox.style.top = startY + 'px';
+                selBox.style.width = '0px';
+                selBox.style.height = '0px';
+                selBox.style.display = 'block';
+                isDraggingBox = true;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if(!isDraggingBox) return;
+                let rect = ruangKerja.getBoundingClientRect();
+                let currentX = e.clientX - rect.left;
+                let currentY = e.clientY - rect.top;
+                
+                let x = Math.min(startX, currentX);
+                let y = Math.min(startY, currentY);
+                let w = Math.abs(currentX - startX);
+                let h = Math.abs(currentY - startY);
+                
+                selBox.style.left = x + 'px';
+                selBox.style.top = y + 'px';
+                selBox.style.width = w + 'px';
+                selBox.style.height = h + 'px';
+            });
+
+            document.addEventListener('mouseup', function(e) {
+                if(isDraggingBox) {
+                    isDraggingBox = false;
+                    selBox.style.display = 'none';
+                    
+                    let boxRect = { 
+                        left: parseInt(selBox.style.left), 
+                        top: parseInt(selBox.style.top), 
+                        right: parseInt(selBox.style.left) + parseInt(selBox.style.width), 
+                        bottom: parseInt(selBox.style.top) + parseInt(selBox.style.height) 
+                    };
+
+                    if (parseInt(selBox.style.width) > 5 && parseInt(selBox.style.height) > 5) {
+                        let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
+                        semuaKomponen.forEach(el => {
+                            let elRect = { 
+                                left: el.offsetLeft, 
+                                top: el.offsetTop, 
+                                right: el.offsetLeft + el.offsetWidth, 
+                                bottom: el.offsetTop + el.offsetHeight 
+                            };
+                            if (boxRect.left < elRect.right && boxRect.right > elRect.left && boxRect.top < elRect.bottom && boxRect.bottom > elRect.top) {
+                                if(el.dataset.terkunci !== 'true') {
+                                    grupTerpilih.push(el);
+                                    el.classList.add('komponen-grup-aktif');
+                                }
+                            }
+                        });
+                        if(grupTerpilih.length > 0) tampilkanMenuGrup();
+                    }
+                }
+            });
         }
 
         // --- SISTEM DRAG & INTERAKSI PINTAR ---
         function buatBisaDigeserDanDiklik(elemen) {
-            let titikXAwal = 0, titikYAwal = 0, posisiX = 0, posisiY = 0;
+            let titikXAwal = 0, titikYAwal = 0;
             let sedangDigeser = false;
 
-            function mulaiGeser(e) {
+            elemen.onmousedown = function(e) {
                 if (modePratinjau) {
                     if (elemen.className.includes('elemen-tombol') && elemen.dataset.url) {
                         let link = elemen.dataset.url;
-                        if (!link.startsWith('http://') && !link.startsWith('https://')) {
-                            link = 'https://' + link; 
-                        }
+                        if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link; 
                         window.open(link, '_blank'); 
                     }
                     return; 
                 }
 
                 e.stopPropagation(); 
-                pilihKomponen(elemen);
+                
+                // MULTI SELECT DENGAN SHIFT + KLIK
+                if (e.shiftKey) {
+                    if (grupTerpilih.includes(elemen)) {
+                        let index = grupTerpilih.indexOf(elemen);
+                        grupTerpilih.splice(index, 1);
+                        elemen.classList.remove('komponen-grup-aktif');
+                        if (grupTerpilih.length === 0) tutupMenuMengambang(); else tampilkanMenuGrup();
+                        return;
+                    } else {
+                        if(!grupTerpilih.includes(elemen) && elemen.dataset.terkunci !== 'true') {
+                            grupTerpilih.push(elemen);
+                            elemen.classList.add('komponen-grup-aktif');
+                        }
+                    }
+                } else {
+                    if (!grupTerpilih.includes(elemen)) {
+                        bersihkanGrup();
+                        pilihKomponen(elemen);
+                    }
+                }
 
-                if (elemen.contentEditable === "true" && document.activeElement === elemen) return; 
+                if(grupTerpilih.length > 0) tampilkanMenuGrup();
+
+                if (elemen.contentEditable === "true" && document.activeElement === elemen && grupTerpilih.length === 0) return; 
                 if (elemen.dataset.terkunci === 'true') return;
 
                 let rect = elemen.getBoundingClientRect();
-                // Deteksi client X/Y dari mouse ATAU sentuhan HP
-                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                let isResizeArea = (e.clientX > rect.right - 20) && (e.clientY > rect.bottom - 20);
+                if ((elemen.className.includes('kotak') || elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio') || elemen.className.includes('embed')) && isResizeArea) return; 
 
-                let isResizeArea = (clientX > rect.right - 20) && (clientY > rect.bottom - 20);
-                if ((elemen.className.includes('kotak') || elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio')) && isResizeArea) {
-                    return; 
-                }
-
-                if(e.type !== 'touchstart') e.preventDefault();
-                titikXAwal = clientX;
-                titikYAwal = clientY;
+                e.preventDefault();
+                titikXAwal = e.clientX;
+                titikYAwal = e.clientY;
                 sedangDigeser = false;
                 
+                // Simpan posisi awal untuk drag bareng-bareng
+                if(grupTerpilih.length > 0) {
+                    grupTerpilih.forEach(el => {
+                        el.dataset.startLeft = el.offsetLeft;
+                        el.dataset.startTop = el.offsetTop;
+                    });
+                } else {
+                    elemen.dataset.startLeft = elemen.offsetLeft;
+                    elemen.dataset.startTop = elemen.offsetTop;
+                }
+
                 document.onmousemove = geserElemen;
                 document.onmouseup = hentikanGeser;
-                document.ontouchmove = geserElemen;
-                document.ontouchend = hentikanGeser;
-            }
-
-            elemen.onmousedown = mulaiGeser;
-            elemen.ontouchstart = mulaiGeser; // Event untuk HP
+            };
 
             function geserElemen(e) {
-                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-                if(e.type === 'touchmove') e.preventDefault(); // Mencegah layar HP ikut terscroll
-                
+                e.preventDefault();
                 sedangDigeser = true; 
-                posisiX = titikXAwal - clientX;
-                posisiY = titikYAwal - clientY;
-                titikXAwal = clientX;
-                titikYAwal = clientY;
+                let dx = e.clientX - titikXAwal;
+                let dy = e.clientY - titikYAwal;
                 
-                elemen.style.top = (elemen.offsetTop - posisiY) + "px";
-                elemen.style.left = (elemen.offsetLeft - posisiX) + "px";
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let parentWidth = ruangKerja.offsetWidth;
 
-                document.getElementById('menu-mengambang').style.opacity = '0';
-                document.getElementById('menu-mengambang').style.pointerEvents = 'none';
+                if (grupTerpilih.length > 0) {
+                    grupTerpilih.forEach(el => {
+                        let nTop = parseInt(el.dataset.startTop) + dy;
+                        let nLeft = parseInt(el.dataset.startLeft) + dx;
+                        el.style.top = nTop + "px";
+                        el.style.left = ((nLeft / parentWidth) * 100) + "%";
+                    });
+                    document.getElementById('menu-mengambang').style.opacity = '0';
+                    document.getElementById('menu-mengambang').style.pointerEvents = 'none';
+                } 
+                else {
+                    let newTopPx = parseInt(elemen.dataset.startTop) + dy;
+                    let newLeftPx = parseInt(elemen.dataset.startLeft) + dx;
+                    
+                    // SMART GUIDES (GARIS BANTU MAGNETIK)
+                    let guideV = document.getElementById('guide-v');
+                    let guideH = document.getElementById('guide-h');
+                    guideV.style.display = 'none';
+                    guideH.style.display = 'none';
+                    
+                    if(!e.shiftKey) { 
+                        let snapThreshold = 10;
+                        let width = elemen.offsetWidth;
+                        let height = elemen.offsetHeight;
+                        let centerX = newLeftPx + width / 2;
+                        let centerY = newTopPx + height / 2;
+                        
+                        let snappedX = false, snappedY = false;
+                        let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
+                        
+                        for(let i=0; i<semuaKomponen.length; i++) {
+                            let target = semuaKomponen[i];
+                            if(target === elemen) continue;
+                            
+                            let tLeft = target.offsetLeft;
+                            let tTop = target.offsetTop;
+                            let tWidth = target.offsetWidth;
+                            let tHeight = target.offsetHeight;
+                            let tCenterX = tLeft + tWidth / 2;
+                            let tCenterY = tTop + tHeight / 2;
+                            
+                            if(!snappedX) {
+                                if(Math.abs(newLeftPx - tLeft) < snapThreshold) { newLeftPx = tLeft; snappedX = true; showGuideV(tLeft); }
+                                else if(Math.abs((newLeftPx+width) - (tLeft+tWidth)) < snapThreshold) { newLeftPx = tLeft+tWidth-width; snappedX = true; showGuideV(tLeft+tWidth); }
+                                else if(Math.abs(centerX - tCenterX) < snapThreshold) { newLeftPx = tCenterX - width/2; snappedX = true; showGuideV(tCenterX); }
+                            }
+                            if(!snappedY) {
+                                if(Math.abs(newTopPx - tTop) < snapThreshold) { newTopPx = tTop; snappedY = true; showGuideH(tTop); }
+                                else if(Math.abs((newTopPx+height) - (tTop+tHeight)) < snapThreshold) { newTopPx = tTop+tHeight-height; snappedY = true; showGuideH(tTop+tHeight); }
+                                else if(Math.abs(centerY - tCenterY) < snapThreshold) { newTopPx = tCenterY - height/2; snappedY = true; showGuideH(tCenterY); }
+                            }
+                        }
+                    }
+                    elemen.style.top = newTopPx + "px";
+                    elemen.style.left = ((newLeftPx / parentWidth) * 100) + "%";
+                    document.getElementById('menu-mengambang').style.opacity = '0';
+                    document.getElementById('menu-mengambang').style.pointerEvents = 'none';
+                }
             }
 
+            function showGuideV(x) { let g = document.getElementById('guide-v'); g.style.left = x + 'px'; g.style.display = 'block'; }
+            function showGuideH(y) { let g = document.getElementById('guide-h'); g.style.top = y + 'px'; g.style.display = 'block'; }
+
             function hentikanGeser(e) {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                document.ontouchmove = null;
-                document.ontouchend = null;
+                document.onmouseup = null; document.onmousemove = null;
+                document.getElementById('guide-v').style.display = 'none'; document.getElementById('guide-h').style.display = 'none';
                 
-                if (!sedangDigeser && elemen.contentEditable === "true") {
-                    elemen.focus();
-                }
+                if (!sedangDigeser && elemen.contentEditable === "true" && grupTerpilih.length === 0) elemen.focus();
                 
                 if (sedangDigeser) {
-                    // FITUR BARU: Efek Magnet (Snap to Grid) saat dilepas
-                    let gridAktif = document.getElementById('toggle-grid') && document.getElementById('toggle-grid').checked;
-                    if (gridAktif) {
-                        let topSaatIni = parseInt(elemen.style.top || 0);
-                        let leftSaatIni = parseInt(elemen.style.left || 0);
-                        // Dibulatkan ke kelipatan 20px (ukuran grid)
-                        elemen.style.top = Math.round(topSaatIni / 20) * 20 + "px";
-                        elemen.style.left = Math.round(leftSaatIni / 20) * 20 + "px";
-                    }
-
                     simpanDiamDiam();
-                    if (komponenTerpilih === elemen) {
+                    if (grupTerpilih.length > 0) {
+                        tampilkanMenuGrup();
+                    } else if (komponenTerpilih === elemen) {
                         posisikanMenu(elemen);
                         document.getElementById('menu-mengambang').style.opacity = '1';
                         document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
@@ -700,23 +999,44 @@
             }
         }
 
-        // --- SISTEM MENU MENGAMBANG ---
+        // --- SISTEM MENU MENGAMBANG & SETTINGS ---
         function rgbKeHex(rgb) {
             if(!rgb || rgb === 'none' || rgb === 'transparent') return '#ffffff';
-            let a = rgb.split("(")[1].split(")")[0];
-            a = a.split(",");
-            let b = a.map(function(x) {             
-                x = parseInt(x).toString(16);
-                return (x.length==1) ? "0"+x : x;
-            });
-            return "#" + b.join("");
+            if(rgb.includes('linear-gradient')) return '#ffffff'; 
+            let a = rgb.split("(")[1].split(")")[0].split(",");
+            let b = a.map(function(x) { x = parseInt(x).toString(16); return (x.length==1) ? "0"+x : x; });
+            return "#" + b.slice(0,3).join("");
+        }
+
+        function bersihkanGrup() {
+            grupTerpilih.forEach(el => el.classList.remove('komponen-grup-aktif'));
+            grupTerpilih = [];
+        }
+
+        function tampilkanMenuGrup() {
+            if(grupTerpilih.length === 0) { tutupMenuMengambang(); return; }
+            if (komponenTerpilih) { komponenTerpilih.classList.remove('komponen-aktif'); komponenTerpilih = null; }
+            
+            let menu = document.getElementById('menu-mengambang');
+            menu.style.display = 'flex'; menu.style.opacity = '1'; menu.style.pointerEvents = 'auto';
+            
+            document.getElementById('kontrol-teks').style.display = 'none';
+            document.getElementById('kontrol-font').style.display = 'none';
+            document.getElementById('kontrol-gambar').style.display = 'none';
+            document.getElementById('kontrol-bentuk').style.display = 'none';
+            document.getElementById('kontrol-rumus').style.display = 'none';
+            document.getElementById('kontrol-embed').style.display = 'none';
+            document.getElementById('btn-kunci').style.display = 'none';
+
+            // Nyalakan fitur perataan khusus grup
+            document.getElementById('kontrol-alignment').style.display = 'flex';
+
+            posisikanMenu(grupTerpilih[0]); // Posisikan di dekat elemen pertama yang dipilih
         }
 
         function pilihKomponen(elemen) {
-            if (komponenTerpilih) {
-                komponenTerpilih.classList.remove('komponen-aktif');
-            }
-
+            if (komponenTerpilih) komponenTerpilih.classList.remove('komponen-aktif');
+            
             komponenTerpilih = elemen;
             komponenTerpilih.classList.add('komponen-aktif');
 
@@ -724,31 +1044,45 @@
             menu.style.opacity = '1';
             menu.style.pointerEvents = 'auto';
 
-            let btnKunci = document.getElementById('btn-kunci');
-            if (elemen.dataset.terkunci === 'true') {
-                btnKunci.innerText = '🔒';
-            } else {
-                btnKunci.innerText = '🔓';
-            }
+            document.getElementById('btn-kunci').style.display = 'inline-block';
+            document.getElementById('btn-kunci').innerText = (elemen.dataset.terkunci === 'true') ? '🔒' : '🔓';
+            document.getElementById('kontrol-alignment').style.display = 'none'; // Sembunyikan perataan jika pilih tunggal
 
             document.getElementById('kontrol-teks').style.display = 'none';
             document.getElementById('kontrol-font').style.display = 'none';
             document.getElementById('kontrol-gambar').style.display = 'none';
             document.getElementById('kontrol-bentuk').style.display = 'none';
             document.getElementById('kontrol-rumus').style.display = 'none';
+            document.getElementById('kontrol-gradasi-warna').style.display = 'none';
+            document.getElementById('kontrol-embed').style.display = 'none';
+
+            document.getElementById('input-animasi').value = elemen.dataset.animasi || "";
 
             let warnaElemen = window.getComputedStyle(elemen).color;
-            if (elemen.className.includes('kotak') || elemen.className.includes('tombol') || elemen.className.includes('audio')) {
+            if (elemen.dataset.jenis === 'kotak' || elemen.dataset.jenis === 'tombol' || elemen.dataset.jenis === 'audio') {
                 warnaElemen = window.getComputedStyle(elemen).backgroundColor;
+                document.getElementById('kontrol-gradasi-warna').style.display = 'flex'; 
+                let bgLengkap = elemen.style.background;
+                document.getElementById('cek-gradasi').checked = bgLengkap.includes('linear-gradient');
             }
             let warnaHex = warnaElemen.includes('rgb') ? rgbKeHex(warnaElemen) : warnaElemen;
             document.getElementById('input-warna').value = warnaHex;
             document.getElementById('input-warna-hex').value = warnaHex;
 
+            let opasitasSaatIni = window.getComputedStyle(elemen).opacity;
+            document.getElementById('input-opasitas').value = opasitasSaatIni;
+            
+            let shadowSaatIni = window.getComputedStyle(elemen).boxShadow;
+            let besaranBlur = 0;
+            if(shadowSaatIni !== 'none' && shadowSaatIni !== '') {
+                let pisahSppasi = shadowSaatIni.split('px');
+                if(pisahSppasi.length >= 3) besaranBlur = parseInt(pisahSppasi[1].split(' ').pop()); 
+            }
+            document.getElementById('input-bayangan').value = besaranBlur || 0;
+
             if (elemen.className.includes('teks') || elemen.className.includes('tombol') || elemen.className.includes('rumus')) {
                 document.getElementById('kontrol-teks').style.display = 'flex';
-                let fontSaatIni = window.getComputedStyle(elemen).fontSize;
-                document.getElementById('input-ukuran-teks').value = parseInt(fontSaatIni);
+                document.getElementById('input-ukuran-teks').value = parseInt(window.getComputedStyle(elemen).fontSize);
 
                 if (elemen.className.includes('teks') || elemen.className.includes('tombol')) {
                      document.getElementById('kontrol-font').style.display = 'flex';
@@ -763,25 +1097,33 @@
             if (elemen.className.includes('gambar') || elemen.className.includes('video') || elemen.className.includes('audio') || elemen.className.includes('tombol')) {
                 document.getElementById('kontrol-gambar').style.display = 'flex';
                 let labelUrl = document.getElementById('label-url');
+                let bantuanUrl = document.getElementById('bantuan-url');
 
                 if (elemen.className.includes('tombol')) {
                     labelUrl.innerText = "Link Tujuan:";
+                    bantuanUrl.innerText = "Gunakan URL web, contoh: https://google.com";
                     document.getElementById('input-url-gambar').value = elemen.dataset.url || "";
                 } else if (elemen.className.includes('video')) {
                     labelUrl.innerText = "URL Video:";
-                    let iframe = elemen.querySelector('iframe');
-                    document.getElementById('input-url-gambar').value = iframe ? iframe.src : "";
+                    bantuanUrl.innerText = "Mendukung link YouTube biasa atau link Embed.";
+                    let media = elemen.querySelector('iframe');
+                    document.getElementById('input-url-gambar').value = (media && media.src) ? media.src : "";
                 } else if (elemen.className.includes('audio')) {
                     labelUrl.innerText = "URL Audio:";
-                    let audio = elemen.querySelector('audio');
-                    document.getElementById('input-url-gambar').value = (audio && audio.src) ? audio.src : "";
+                    bantuanUrl.innerText = "Gunakan link musik berakhiran .mp3 atau .wav";
+                    let media = elemen.querySelector('audio');
+                    document.getElementById('input-url-gambar').value = (media && media.src) ? media.src : "";
                 } else {
                     labelUrl.innerText = "URL Gambar:";
+                    bantuanUrl.innerText = "Mendukung link langsung ke gambar (.jpg, .png, .gif).";
                     let bgImg = elemen.style.backgroundImage;
-                    document.getElementById('input-url-gambar').value = bgImg !== "none" ? bgImg.slice(5, -2) : "";
+                    if(bgImg && bgImg !== "none") {
+                        let match = bgImg.match(/url\(['"]?(.*?)['"]?\)/i);
+                        document.getElementById('input-url-gambar').value = match ? match[1] : "";
+                    } else { document.getElementById('input-url-gambar').value = ""; }
                 }
             } 
-            if (elemen.className.includes('kotak')) {
+            if (elemen.className.includes('kotak') || elemen.className.includes('embed')) {
                 document.getElementById('kontrol-bentuk').style.display = 'flex';
                 let radiusSaatIni = window.getComputedStyle(elemen).borderRadius;
                 if (radiusSaatIni === '50%') document.getElementById('input-bentuk').value = '50%';
@@ -791,6 +1133,10 @@
             if (elemen.className.includes('rumus')) {
                 document.getElementById('kontrol-rumus').style.display = 'flex';
                 document.getElementById('input-latex').value = elemen.dataset.latex || "";
+            }
+            if (elemen.className.includes('embed')) {
+                document.getElementById('kontrol-embed').style.display = 'flex';
+                document.getElementById('input-embed').value = elemen.dataset.embed || "";
             }
 
             posisikanMenu(elemen);
@@ -804,62 +1150,143 @@
             menu.style.left = elemen.offsetLeft + "px";
         }
 
+        // --- FITUR ALIGNMENT (PERATAAN GRUP) ---
+        function ratakanGrup(tipe) {
+            if(grupTerpilih.length < 2) return;
+            
+            // Jadikan elemen pertama yang diklik sebagai titik jangkar (patokan)
+            let patokan = grupTerpilih[0];
+            let patokanL = patokan.offsetLeft;
+            let patokanT = patokan.offsetTop;
+            let patokanR = patokan.offsetLeft + patokan.offsetWidth;
+            let patokanB = patokan.offsetTop + patokan.offsetHeight;
+            let patokanCx = patokan.offsetLeft + (patokan.offsetWidth / 2);
+            let patokanCy = patokan.offsetTop + (patokan.offsetHeight / 2);
+            
+            let parentWidth = document.getElementById('ruang-kerja').offsetWidth;
+
+            grupTerpilih.forEach(el => {
+                if(el === patokan) return;
+                
+                let newLeft = el.offsetLeft;
+                let newTop = el.offsetTop;
+                
+                if (tipe === 'kiri') newLeft = patokanL;
+                if (tipe === 'kanan') newLeft = patokanR - el.offsetWidth;
+                if (tipe === 'tengah-x') newLeft = patokanCx - (el.offsetWidth / 2);
+                if (tipe === 'atas') newTop = patokanT;
+                if (tipe === 'bawah') newTop = patokanB - el.offsetHeight;
+                if (tipe === 'tengah-y') newTop = patokanCy - (el.offsetHeight / 2);
+
+                el.style.left = ((newLeft / parentWidth) * 100) + "%";
+                el.style.top = newTop + "px";
+            });
+            
+            simpanDiamDiam();
+            posisikanMenu(patokan);
+        }
+
+        function ubahAnimasi() {
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            let animasiBaru = document.getElementById('input-animasi').value;
+            targetCollection.forEach(el => el.dataset.animasi = animasiBaru);
+            simpanDiamDiam();
+        }
+
         function ubahWarna(sumber) {
-            if (!komponenTerpilih) return;
-            let warnaBaru = "";
-            if (sumber === 'picker') {
-                warnaBaru = document.getElementById('input-warna').value;
-                document.getElementById('input-warna-hex').value = warnaBaru;
-            } else {
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
+
+            let warnaBaru = document.getElementById('input-warna').value;
+            if (sumber === 'hex') {
                 warnaBaru = document.getElementById('input-warna-hex').value;
                 if(warnaBaru.startsWith('#') && (warnaBaru.length === 4 || warnaBaru.length === 7)) {
                     document.getElementById('input-warna').value = warnaBaru;
                 }
-            }
+            } else { document.getElementById('input-warna-hex').value = warnaBaru; }
+            
+            targetCollection.forEach(el => {
+                if (el.className.includes('teks') || el.className.includes('rumus') || el.className.includes('embed')) {
+                    el.style.color = warnaBaru;
+                }
+            });
+            ubahEfekDesain(); 
+        }
 
-            if (komponenTerpilih.className.includes('teks') || komponenTerpilih.className.includes('rumus')) {
-                komponenTerpilih.style.color = warnaBaru;
-            } else {
-                komponenTerpilih.style.backgroundColor = warnaBaru;
-            }
+        function ubahEfekDesain() {
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
+
+            let opasitas = document.getElementById('input-opasitas').value;
+            let bayangan = document.getElementById('input-bayangan').value;
+            let isGradient = document.getElementById('cek-gradasi').checked;
+            let c1 = document.getElementById('input-warna').value; 
+            let c2 = document.getElementById('input-warna2').value;
+
+            targetCollection.forEach(el => {
+                el.style.opacity = opasitas;
+                if(bayangan > 0) { el.style.boxShadow = `0px ${bayangan/2}px ${bayangan}px rgba(0,0,0,0.6)`; } 
+                else { el.style.boxShadow = 'none'; }
+                
+                if (el.dataset.jenis === 'kotak' || el.dataset.jenis === 'tombol' || el.dataset.jenis === 'audio') {
+                    if(isGradient) { el.style.background = `linear-gradient(135deg, ${c1}, ${c2})`; } 
+                    else { el.style.background = c1; }
+                }
+            });
             simpanDiamDiam();
         }
 
         function ubahFont() {
-            if (!komponenTerpilih) return;
+            if (!komponenTerpilih && grupTerpilih.length === 0) return;
             let fontBaru = document.getElementById('input-font').value;
-            komponenTerpilih.style.fontFamily = fontBaru;
-            simpanDiamDiam();
-            posisikanMenu(komponenTerpilih); 
+            if(grupTerpilih.length > 0) {
+                grupTerpilih.forEach(el => { if(el.className.includes('teks') || el.className.includes('tombol')) el.style.fontFamily = fontBaru; });
+                posisikanMenu(grupTerpilih[0]);
+            } else {
+                komponenTerpilih.style.fontFamily = fontBaru;
+                posisikanMenu(komponenTerpilih);
+            }
+            simpanDiamDiam(); 
         }
 
         function ubahRumus() {
             if (!komponenTerpilih || komponenTerpilih.dataset.jenis !== 'rumus') return;
             let teksLatex = document.getElementById('input-latex').value;
             komponenTerpilih.dataset.latex = teksLatex; 
-            
-            try {
-                katex.render(teksLatex, komponenTerpilih, { throwOnError: false });
-            } catch(e) {
-                komponenTerpilih.innerText = "Format Salah";
+            try { katex.render(teksLatex, komponenTerpilih, { throwOnError: false }); } 
+            catch(e) { komponenTerpilih.innerText = "Format Salah"; }
+            simpanDiamDiam(); posisikanMenu(komponenTerpilih); 
+        }
+
+        function ubahEmbed() {
+            if (!komponenTerpilih || komponenTerpilih.dataset.jenis !== 'embed') return;
+            let kodeBaru = document.getElementById('input-embed').value;
+            komponenTerpilih.dataset.embed = kodeBaru;
+            if (kodeBaru.trim() !== "") {
+                komponenTerpilih.innerHTML = `<div class="embed-content">${kodeBaru}</div>`;
+            } else {
+                komponenTerpilih.innerHTML = `<div class="placeholder-media">🌐 Area Embed Kode</div><div class="embed-content" style="display:none;"></div>`;
             }
             simpanDiamDiam();
-            posisikanMenu(komponenTerpilih); 
         }
 
         function sisipkanSimbol(simbol) {
             let textarea = document.getElementById('input-latex');
             textarea.value += " " + simbol + " ";
-            ubahRumus();
-            textarea.focus();
+            ubahRumus(); textarea.focus();
         }
 
         function ubahUkuranTeks() {
-            if (!komponenTerpilih) return;
-            let ukuranBaru = document.getElementById('input-ukuran-teks').value;
-            komponenTerpilih.style.fontSize = ukuranBaru + "px";
-            simpanDiamDiam();
-            posisikanMenu(komponenTerpilih); 
+            if (!komponenTerpilih && grupTerpilih.length === 0) return;
+            let ukuranBaru = document.getElementById('input-ukuran-teks').value + "px";
+            if(grupTerpilih.length > 0) {
+                grupTerpilih.forEach(el => { if(el.className.includes('teks') || el.className.includes('tombol') || el.className.includes('rumus')) el.style.fontSize = ukuranBaru; });
+                posisikanMenu(grupTerpilih[0]);
+            } else {
+                komponenTerpilih.style.fontSize = ukuranBaru;
+                posisikanMenu(komponenTerpilih);
+            }
+            simpanDiamDiam(); 
         }
 
         function ubahMedia() {
@@ -883,79 +1310,84 @@
                 }
             } else {
                 if (urlBaru) {
-                    komponenTerpilih.style.backgroundImage = "url('" + urlBaru + "')";
+                    let safeUrl = urlBaru.replace(/"/g, '\\"');
+                    komponenTerpilih.style.backgroundImage = `url("${safeUrl}")`;
                     komponenTerpilih.style.backgroundSize = "cover";
                     komponenTerpilih.style.backgroundPosition = "center";
                     komponenTerpilih.innerText = ""; 
                 } else {
                     komponenTerpilih.style.backgroundImage = "none";
-                    komponenTerpilih.innerText = "Area Gambar";
+                    if(komponenTerpilih.className.includes('gambar')) komponenTerpilih.innerText = "Area Gambar";
                 }
             }
             simpanDiamDiam();
         }
 
         function ubahBentuk() {
-            if (!komponenTerpilih) return;
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
             let radiusBaru = document.getElementById('input-bentuk').value;
-            komponenTerpilih.style.borderRadius = radiusBaru;
+            targetCollection.forEach(el => el.style.borderRadius = radiusBaru);
             simpanDiamDiam();
         }
 
         function duplikatKomponen() {
-            if (!komponenTerpilih) return;
-            
-            let bgData = komponenTerpilih.style.backgroundImage;
-            if (komponenTerpilih.dataset.jenis === 'video') {
-                let iframe = komponenTerpilih.querySelector('iframe');
-                bgData = iframe ? iframe.src : "";
-            } else if (komponenTerpilih.dataset.jenis === 'audio') {
-                let audio = komponenTerpilih.querySelector('audio');
-                bgData = audio ? audio.src : "";
-            }
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
 
-            let data = {
-                jenis: komponenTerpilih.dataset.jenis,
-                top: (parseInt(komponenTerpilih.style.top || 0) + 20) + 'px',
-                left: (parseInt(komponenTerpilih.style.left || 0) + 20) + 'px',
-                isi: komponenTerpilih.innerText,
-                warna: komponenTerpilih.style.color || komponenTerpilih.style.backgroundColor,
-                ukuran: komponenTerpilih.style.fontSize,
-                bg: bgData,
-                lebar: window.getComputedStyle(komponenTerpilih).width,
-                tinggi: window.getComputedStyle(komponenTerpilih).height,
-                radius: window.getComputedStyle(komponenTerpilih).borderRadius,
-                zindex: parseInt(komponenTerpilih.style.zIndex || 1) + 1,
-                latex: komponenTerpilih.dataset.latex,
-                terkunci: 'false',
-                url: komponenTerpilih.dataset.url || "",
-                fontFamily: window.getComputedStyle(komponenTerpilih).fontFamily
-            };
-            
-            tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily);
+            let baruArr = [];
+            targetCollection.forEach(elemen => {
+                let bgData = elemen.style.backgroundImage;
+                if (elemen.dataset.jenis === 'video' || elemen.dataset.jenis === 'audio') {
+                    let media = elemen.querySelector('iframe') || elemen.querySelector('audio');
+                    bgData = media ? media.src : "";
+                }
+
+                let data = {
+                    jenis: elemen.dataset.jenis, top: (parseInt(elemen.style.top || 0) + 20) + 'px', left: (parseFloat(elemen.style.left || 0) + 2) + '%',
+                    isi: elemen.innerText, warna: elemen.style.color || elemen.style.backgroundColor, ukuran: elemen.style.fontSize,
+                    bg: bgData, lebar: window.getComputedStyle(elemen).width, tinggi: window.getComputedStyle(elemen).height,
+                    radius: window.getComputedStyle(elemen).borderRadius, zindex: parseInt(elemen.style.zIndex || 1) + 1,
+                    latex: elemen.dataset.latex, terkunci: 'false', url: elemen.dataset.url || "", fontFamily: window.getComputedStyle(elemen).fontFamily,
+                    opasitas: window.getComputedStyle(elemen).opacity, bayangan: window.getComputedStyle(elemen).boxShadow,
+                    backgroundLengkap: elemen.style.background || elemen.style.backgroundColor, embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || ""
+                };
+                tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily, data.opasitas, data.bayangan, data.backgroundLengkap, data.embed, data.animasi);
+            });
+            bersihkanGrup(); tutupMenuMengambang();
         }
 
         function pindahLapis(arah) {
-            if (!komponenTerpilih) return;
-            let lapisSekarang = parseInt(komponenTerpilih.style.zIndex || 1);
-            let lapisBaru = lapisSekarang + arah;
-            if (lapisBaru < 1) lapisBaru = 1;
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
             
-            komponenTerpilih.style.zIndex = lapisBaru;
+            targetCollection.forEach(el => {
+                let lapisSekarang = parseInt(el.style.zIndex || 1);
+                let lapisBaru = lapisSekarang + arah;
+                if (lapisBaru < 1) lapisBaru = 1;
+                el.style.zIndex = lapisBaru;
+            });
             simpanDiamDiam();
         }
 
         function kunciKomponen() {
-            if (!komponenTerpilih) return;
-            if (komponenTerpilih.dataset.terkunci === 'true') {
-                komponenTerpilih.dataset.terkunci = 'false';
-                komponenTerpilih.classList.remove('komponen-terkunci');
-                document.getElementById('btn-kunci').innerText = '🔓';
-            } else {
-                komponenTerpilih.dataset.terkunci = 'true';
-                komponenTerpilih.classList.add('komponen-terkunci');
-                document.getElementById('btn-kunci').innerText = '🔒';
-            }
+            let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
+            if(targetCollection.length === 0) return;
+
+            // Gunakan elemen pertama sebagai acuan toggle
+            let isTerkunci = targetCollection[0].dataset.terkunci === 'true';
+            
+            targetCollection.forEach(el => {
+                if (isTerkunci) {
+                    el.dataset.terkunci = 'false';
+                    el.classList.remove('komponen-terkunci');
+                } else {
+                    el.dataset.terkunci = 'true';
+                    el.classList.add('komponen-terkunci');
+                }
+            });
+            
+            document.getElementById('btn-kunci').innerText = isTerkunci ? '🔓' : '🔒';
             simpanDiamDiam();
         }
 
@@ -965,28 +1397,58 @@
             const activeEl = document.activeElement;
             if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable) return;
 
-            if (komponenTerpilih) {
+            if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); aksiUndo(); return; }
+            if (e.ctrlKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); aksiRedo(); return; }
+
+            if (grupTerpilih.length > 0) {
                 if (e.key === 'Delete') {
-                    hapusKomponenAktif();
-                    return;
+                    grupTerpilih.forEach(el => { if(el.dataset.terkunci !== 'true') el.remove(); });
+                    bersihkanGrup(); simpanDiamDiam(); tutupMenuMengambang(); return;
                 }
                 
-                if (komponenTerpilih.dataset.terkunci === 'true' && e.key.includes('Arrow')) return;
-
-                let step = e.shiftKey ? 10 : 1; 
-                let top = parseInt(komponenTerpilih.style.top || 0);
-                let left = parseInt(komponenTerpilih.style.left || 0);
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let stepY = e.shiftKey ? 10 : 1; 
+                let stepX = e.shiftKey ? 10 : 1; 
                 let moved = false;
+                let dx = 0, dy = 0;
 
-                if (e.key === 'ArrowUp') { top -= step; moved = true; e.preventDefault(); }
-                if (e.key === 'ArrowDown') { top += step; moved = true; e.preventDefault(); }
-                if (e.key === 'ArrowLeft') { left -= step; moved = true; e.preventDefault(); }
-                if (e.key === 'ArrowRight') { left += step; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowUp') { dy = -stepY; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowDown') { dy = stepY; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowLeft') { dx = -stepX; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowRight') { dx = stepX; moved = true; e.preventDefault(); }
 
                 if (moved) {
-                    komponenTerpilih.style.top = top + 'px';
-                    komponenTerpilih.style.left = left + 'px';
-                    
+                    grupTerpilih.forEach(el => {
+                        if(el.dataset.terkunci === 'true') return;
+                        let nTop = el.offsetTop + dy;
+                        let nLeft = el.offsetLeft + dx;
+                        el.style.top = nTop + "px";
+                        el.style.left = ((nLeft / ruangKerja.offsetWidth) * 100) + "%";
+                    });
+                    document.getElementById('menu-mengambang').style.opacity = '0';
+                    document.getElementById('menu-mengambang').style.pointerEvents = 'none';
+                }
+                return;
+            }
+
+            if (komponenTerpilih) {
+                if (e.key === 'Delete') { hapusKomponenAktif(); return; }
+                if (komponenTerpilih.dataset.terkunci === 'true' && e.key.includes('Arrow')) return;
+
+                let ruangKerja = document.getElementById('ruang-kerja');
+                let stepY = e.shiftKey ? 10 : 1; let stepX = e.shiftKey ? 10 : 1; 
+                let topPx = parseInt(komponenTerpilih.style.top || 0);
+                let leftPx = komponenTerpilih.offsetLeft; 
+                let moved = false;
+
+                if (e.key === 'ArrowUp') { topPx -= stepY; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowDown') { topPx += stepY; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowLeft') { leftPx -= stepX; moved = true; e.preventDefault(); }
+                if (e.key === 'ArrowRight') { leftPx += stepX; moved = true; e.preventDefault(); }
+
+                if (moved) {
+                    komponenTerpilih.style.top = topPx + 'px';
+                    komponenTerpilih.style.left = ((leftPx / ruangKerja.offsetWidth) * 100) + "%";
                     document.getElementById('menu-mengambang').style.opacity = '0';
                     document.getElementById('menu-mengambang').style.pointerEvents = 'none';
                 }
@@ -995,11 +1457,14 @@
 
         document.addEventListener('keyup', function(e) {
             if (modePratinjau) return;
-            if (komponenTerpilih && e.key.includes('Arrow')) {
-                clearTimeout(timerKeyboard);
-                simpanDiamDiam(); 
+            const activeEl = document.activeElement;
+            if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable) return;
+
+            if ((komponenTerpilih || grupTerpilih.length > 0) && e.key.includes('Arrow')) {
+                clearTimeout(timerKeyboard); simpanDiamDiam(); 
                 timerKeyboard = setTimeout(() => {
-                    posisikanMenu(komponenTerpilih);
+                    let referensiMenu = grupTerpilih.length > 0 ? grupTerpilih[0] : komponenTerpilih;
+                    posisikanMenu(referensiMenu);
                     document.getElementById('menu-mengambang').style.opacity = '1';
                     document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
                 }, 200); 
@@ -1015,7 +1480,7 @@
         }
 
         function hapusKomponenAktif() {
-            if (komponenTerpilih) {
+            if (komponenTerpilih && komponenTerpilih.dataset.terkunci !== 'true') {
                 komponenTerpilih.remove();
                 tutupMenuMengambang();
                 simpanDiamDiam();
@@ -1023,265 +1488,110 @@
         }
 
         function klikAreaKosong(e) {
-            if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container')) return;
-            if (e.target.id === 'canvas' || e.target.id === 'ruang-kerja' || e.target.className === 'teks-kanvas') {
-                tutupMenuMengambang();
+            if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container') || e.target.closest('.btn-aksi-panel')) return;
+            if (e.target.id === 'canvas' || e.target.id === 'ruang-kerja' || e.target.className === 'teks-kanvas' || e.target.id === 'grid-overlay') {
+                tutupMenuMengambang(); bersihkanGrup();
             }
         }
 
-        // --- SISTEM PENYIMPANAN LOKAL (MULTI-PAGE) ---
+        // --- SISTEM PENYIMPANAN CERDAS ---
         function simpanManual() {
             simpanDiamDiam(true); 
             let notif = document.getElementById('notifikasi');
+            notif.innerText = "Desain halaman berhasil disimpan manual!";
             notif.style.display = 'block';
             setTimeout(() => { notif.style.display = 'none'; }, 3000);
         }
 
         function simpanDiamDiam(paksaSimpan = false) {
-            if (isMemuatHalaman) return; // Langsung batal jika sedang memuat halaman baru
-
             let ruangKerja = document.getElementById('ruang-kerja');
-            let semuaKomponen = ruangKerja.children;
-            let dataKanvasSaatIni = [];
+            let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
+            let dataDesain = [];
 
-            for (let i = 0; i < semuaKomponen.length; i++) {
-                let elemen = semuaKomponen[i];
-                if (elemen.dataset.jenis) {
-                    let bgData = elemen.style.backgroundImage;
-                    if (elemen.dataset.jenis === 'video') {
-                        let iframe = elemen.querySelector('iframe');
-                        bgData = iframe ? iframe.src : "";
-                    } else if (elemen.dataset.jenis === 'audio') {
-                        let audio = elemen.querySelector('audio');
-                        bgData = audio ? audio.src : "";
-                    }
-
-                    dataKanvasSaatIni.push({
-                        jenis: elemen.dataset.jenis,
-                        top: elemen.style.top,
-                        left: elemen.style.left,
-                        isi: elemen.innerText,
-                        warna: elemen.style.color || elemen.style.backgroundColor,
-                        ukuran: elemen.style.fontSize,
-                        bg: bgData,
-                        lebar: elemen.style.width,
-                        tinggi: elemen.style.height,
-                        radius: elemen.style.borderRadius,
-                        zindex: elemen.style.zIndex || 1,
-                        latex: elemen.dataset.latex,
-                        terkunci: elemen.dataset.terkunci || 'false',
-                        url: elemen.dataset.url || "",
-                        fontFamily: elemen.style.fontFamily 
-                    });
+            semuaKomponen.forEach(elemen => {
+                let bgData = elemen.style.backgroundImage;
+                if (elemen.dataset.jenis === 'video' || elemen.dataset.jenis === 'audio') {
+                    let media = elemen.querySelector('iframe') || elemen.querySelector('audio');
+                    bgData = media ? media.src : "";
                 }
-            }
 
-            let indexHal = daftarHalaman.findIndex(h => h.id === halamanAktif);
-            if(indexHal !== -1) {
-                daftarHalaman[indexHal].komponen = dataKanvasSaatIni;
-                daftarHalaman[indexHal].latar = {
-                    warna: document.getElementById('input-bg-kanvas').value,
-                    gambar: document.getElementById('input-bg-img-kanvas').value,
-                    tinggi: document.getElementById('input-tinggi-kanvas').value
-                };
-            }
-
-            let dataString = JSON.stringify(daftarHalaman);
-
-            if (dataString !== dataDesainTerakhir || paksaSimpan) {
-                let status = document.getElementById('status-simpan');
-                status.innerText = "⏳ Menyimpan...";
-                status.style.color = "#f39c12"; 
-
-                localStorage.setItem('SiriusWebPages', dataString);
-                dataDesainTerakhir = dataString;
-
-                setTimeout(() => {
-                    status.innerText = "✅ Tersimpan otomatis";
-                    status.style.color = "#27ae60";
-                }, 500);
-            }
-        }
-
-        function muatDesain() {
-            let savedName = localStorage.getItem('SiriusWebProjectName');
-            if (savedName) document.getElementById('nama-desain').value = savedName;
-
-            let dataPages = localStorage.getItem('SiriusWebPages');
-            
-            if (dataPages) {
-                daftarHalaman = JSON.parse(dataPages);
-            } else {
-                let dataLama = localStorage.getItem('SiriusWebSaveData');
-                let bgLama = localStorage.getItem('SiriusWebBgInputs');
-                let bgObj = bgLama ? JSON.parse(bgLama) : { warna: '#0b0c10', gambar: '', tinggi: '2000' };
-                
-                daftarHalaman = [{
-                    id: 'page_1',
-                    nama: 'Beranda',
-                    komponen: dataLama ? JSON.parse(dataLama) : [],
-                    latar: bgObj
-                }];
-            }
-
-            renderDaftarHalaman();
-            
-            if(!halamanAktif || !daftarHalaman.find(h => h.id === halamanAktif)) {
-                halamanAktif = daftarHalaman[0].id;
-            }
-            muatHalamanKeKanvas(halamanAktif);
-        }
-
-        function ubahLatarKanvas() {
-            let warna = document.getElementById('input-bg-kanvas').value;
-            let urlImg = document.getElementById('input-bg-img-kanvas').value;
-            let tinggiKanvas = document.getElementById('input-tinggi-kanvas').value;
-            let ruangKerja = document.getElementById('ruang-kerja'); 
-
-            ruangKerja.style.backgroundColor = warna;
-            ruangKerja.style.minHeight = tinggiKanvas + 'px';
-            
-            if (urlImg) {
-                ruangKerja.style.backgroundImage = `url('${urlImg}')`;
-                ruangKerja.style.backgroundSize = "cover";
-                ruangKerja.style.backgroundPosition = "center";
-            } else {
-                ruangKerja.style.backgroundImage = "none";
-            }
-            
-            // Jaga agar grid tidak tertimpa jika sedang aktif
-            toggleGrid(); 
-            simpanDiamDiam(); 
-        }
-
-        // FITUR BARU: Fungsi untuk mengaktifkan/mematikan Grid visual
-        function toggleGrid() {
-            let rg = document.getElementById('ruang-kerja');
-            let checkbox = document.getElementById('toggle-grid');
-            if (checkbox && checkbox.checked) {
-                rg.classList.add('grid-aktif');
-            } else {
-                rg.classList.remove('grid-aktif');
-            }
-        }
-
-        function bersihkanKanvas() {
-            if(confirm("Yakin ingin menghapus semua elemen dari halaman ini?")) {
-                let ruangKerja = document.getElementById('ruang-kerja');
-                let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]'); 
-                semuaKomponen.forEach(elemen => {
-                    elemen.remove();
+                dataDesain.push({
+                    jenis: elemen.dataset.jenis, top: elemen.style.top, left: elemen.style.left, 
+                    isi: elemen.innerText, warna: elemen.style.color || elemen.style.backgroundColor,
+                    ukuran: elemen.style.fontSize, bg: bgData, lebar: elemen.style.width,
+                    tinggi: elemen.style.height, radius: elemen.style.borderRadius,
+                    zindex: elemen.style.zIndex || 1, latex: elemen.dataset.latex,
+                    terkunci: elemen.dataset.terkunci || 'false', url: elemen.dataset.url || "",
+                    fontFamily: elemen.style.fontFamily, opasitas: elemen.style.opacity || '1',
+                    bayangan: elemen.style.boxShadow || 'none',
+                    backgroundLengkap: elemen.style.background || elemen.style.backgroundColor,
+                    embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || ""
                 });
-                simpanDiamDiam(true);
-                tutupMenuMengambang();
-            }
-        }
-
-        // FITUR BARU: Fungsi Mode Perangkat
-        function ubahLebarKanvas(lebar, elemenTombol) {
-            let ruangKerja = document.getElementById('ruang-kerja');
-            ruangKerja.style.width = lebar;
-            ruangKerja.style.margin = '0 auto';
-            ruangKerja.style.transition = 'width 0.3s ease';
-            
-            if(lebar !== '100%') {
-                ruangKerja.style.borderLeft = '2px dashed #45a29e';
-                ruangKerja.style.borderRight = '2px dashed #45a29e';
-            } else {
-                ruangKerja.style.borderLeft = 'none';
-                ruangKerja.style.borderRight = 'none';
-            }
-
-            // Ganti status aktif di toolbar
-            let tombolPerangkat = document.querySelectorAll('.btn-perangkat');
-            tombolPerangkat.forEach(btn => btn.classList.remove('aktif'));
-            elemenTombol.classList.add('aktif');
-            
-            tutupMenuMengambang();
-        }
-
-        // --- SISTEM EKSPOR KE HTML ---
-        function eksporKeHTML() {
-            let namaDesain = document.getElementById('nama-desain').value || 'Website_Sirius';
-            let ruangKerjaAsli = document.getElementById('ruang-kerja');
-            
-            let klonRuangKerja = ruangKerjaAsli.cloneNode(true);
-            
-            let menu = klonRuangKerja.querySelector('#menu-mengambang');
-            if (menu) menu.remove();
-            let teksKanvas = klonRuangKerja.querySelector('.teks-kanvas');
-            if (teksKanvas) teksKanvas.remove();
-            
-            let semuaKomponen = klonRuangKerja.querySelectorAll('[data-jenis]');
-            semuaKomponen.forEach(el => {
-                el.removeAttribute('contenteditable');
-                el.classList.remove('komponen-aktif', 'komponen-terkunci');
-                
-                if (el.dataset.jenis === 'tombol' && el.dataset.url) {
-                    let link = el.dataset.url;
-                    if (!link.startsWith('http://') && !link.startsWith('https://')) {
-                        link = 'https://' + link; 
-                    }
-                    el.setAttribute('onclick', `window.open('${link}', '_blank')`);
-                }
             });
 
-            let bgWarna = ruangKerjaAsli.style.backgroundColor || '#0b0c10';
-            let bgGambar = ruangKerjaAsli.style.backgroundImage || 'none';
-            let bgTinggi = ruangKerjaAsli.style.minHeight || '2000px';
+            let dataString = JSON.stringify(dataDesain);
+            let pengaturanBaru = { warna: document.getElementById('input-bg-kanvas').value, gambar: document.getElementById('input-bg-img-kanvas').value, tinggi: document.getElementById('input-tinggi-kanvas').value };
+            let isBgChanged = JSON.stringify(databaseHalaman[idHalamanAktif].pengaturan) !== JSON.stringify(pengaturanBaru);
 
-            let htmlAkhir = `<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${namaDesain}</title>
-    <!-- CSS KaTeX untuk dukungan rumus matematika -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <style>
-        body {
-            margin: 0; padding: 0;
-            background-color: ${bgWarna};
-            background-image: ${bgGambar};
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: #c5c6c7;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            min-height: ${bgTinggi};
-            overflow-x: hidden;
-            position: relative;
+            if (dataString !== dataDesainTerakhir || paksaSimpan || isBgChanged) {
+                let status = document.getElementById('status-simpan');
+                status.innerText = "⏳ Menyimpan..."; status.style.color = "#f39c12"; 
+
+                databaseHalaman[idHalamanAktif].elemen = dataDesain;
+                databaseHalaman[idHalamanAktif].pengaturan = pengaturanBaru;
+                dataDesainTerakhir = dataString;
+
+                localStorage.setItem('SiriusWebDataGlobal', JSON.stringify(databaseHalaman));
+                rekamRiwayatSistem(JSON.stringify(databaseHalaman));
+
+                setTimeout(() => { status.innerText = "✅ Tersimpan otomatis"; status.style.color = "#27ae60"; }, 500);
+            }
         }
-        [class^="elemen-"] { position: absolute; box-sizing: border-box; }
-        .elemen-video iframe { width: 100%; height: 100%; border: none; }
-        .elemen-audio audio { width: 95%; height: 40px; outline: none; }
-        .elemen-tombol { cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
-        .elemen-tombol:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .placeholder-media { display: none; }
-    </style>
-</head>
-<body>
-    ${klonRuangKerja.innerHTML}
-</body>
-</html>`;
 
-            let blob = new Blob([htmlAkhir], { type: 'text/html' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = namaDesain.replace(/\s+/g, '_') + '.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // --- SISTEM EKSPOR HTML ---
+        function eksporHTML() {
+            tutupMenuMengambang(); bersihkanGrup();
+            let namaWeb = document.getElementById('nama-desain').value || 'Website Sirius';
+            let namaHal = databaseHalaman[idHalamanAktif].nama;
+            let namaFile = namaWeb.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + namaHal.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.html';
+            let ruangKerja = document.getElementById('ruang-kerja');
             
-            let notif = document.getElementById('notifikasi');
-            notif.innerText = "🎉 Website berhasil diekspor!";
-            notif.style.display = 'block';
-            setTimeout(() => { 
-                notif.style.display = 'none'; 
-                notif.innerText = "Desain berhasil disimpan!";
-            }, 3000);
+            let klonRuangKerja = ruangKerja.cloneNode(true);
+            
+            let teksPanduan = klonRuangKerja.querySelector('.teks-kanvas'); if (teksPanduan) teksPanduan.remove();
+            let gridOverlay = klonRuangKerja.querySelector('#grid-overlay'); if (gridOverlay) gridOverlay.remove();
+            let menuMelayang = klonRuangKerja.querySelector('#menu-mengambang'); if (menuMelayang) menuMelayang.remove();
+            let uiBantu = klonRuangKerja.querySelectorAll('#guide-v, #guide-h, #selection-box');
+            uiBantu.forEach(el => el.remove());
+            
+            let elemenKlon = klonRuangKerja.querySelectorAll('[data-jenis]');
+            elemenKlon.forEach(el => {
+                el.style.resize = 'none'; el.style.cursor = 'default';
+                el.classList.remove('komponen-aktif', 'komponen-grup-aktif', 'anim-hidden', 'anim-fade', 'anim-slide-up', 'anim-zoom');
+                
+                if(el.dataset.jenis === 'teks' || el.dataset.jenis === 'rumus') el.style.border = 'none';
+                if(el.dataset.jenis === 'tombol' && el.dataset.url) {
+                    let link = el.dataset.url;
+                    if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
+                    el.setAttribute('onclick', `window.location.href='${link}'`); el.style.cursor = 'pointer';
+                }
+                if(el.dataset.jenis === 'embed') {
+                    let contentEmbed = el.querySelector('.embed-content');
+                    if(contentEmbed) contentEmbed.style.pointerEvents = 'auto'; 
+                    el.style.background = 'transparent'; el.style.border = 'none';
+                }
+                if(el.dataset.animasi && el.dataset.animasi !== "") { el.classList.add('animate-on-scroll'); }
+
+                el.removeAttribute('contenteditable'); el.removeAttribute('data-terkunci');
+            });
+
+            let htmlFinal = `<!DOCTYPE html>\n<html lang="id">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${namaWeb} - ${namaHal}</title>\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">\n    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script>\n    <style>\n        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; background-color: #0b0c10; }\n        #ruang-kerja { width: 100%; position: relative; overflow-x: hidden; min-height: 100vh; background-color: ${ruangKerja.style.backgroundColor}; background-image: ${ruangKerja.style.backgroundImage}; background-size: cover; background-position: center; }\n        div { box-sizing: border-box; }\n        .elemen-kotak { position: absolute; overflow: hidden; }\n        .elemen-teks { position: absolute; }\n        .elemen-gambar { position: absolute; background-size: cover; background-position: center; overflow: hidden; }\n        .elemen-video { position: absolute; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-video iframe { width: 100%; height: 100%; border: none; }\n        .elemen-audio { position: absolute; display: flex; justify-content: center; align-items: center; border-radius: 30px; overflow: hidden; background: #1f2833;}\n        .elemen-audio audio { width: 95%; height: 40px; outline: none; }\n        .elemen-tombol { position: absolute; font-weight: bold; text-align: center; transition: 0.3s; }\n        .elemen-tombol:hover { transform: scale(1.05); }\n        .elemen-rumus { position: absolute; }\n        .elemen-embed { position: absolute; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-embed .embed-content { width: 100%; height: 100%; pointer-events: auto; }\n        .elemen-embed .embed-content iframe, .elemen-embed .embed-content * { width: 100%; height: 100%; border: none; }\n        \n        .animate-on-scroll { opacity: 0; }\n        .anim-fade { animation: animFadeIn 0.8s ease forwards; }\n        .anim-slide-up { animation: animSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        .anim-zoom { animation: animZoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        @keyframes animFadeIn { from { opacity: 0; } to { opacity: 1; } }\n        @keyframes animSlideUp { from { opacity: 0; transform: translateY(80px); } to { opacity: 1; transform: translateY(0); } }\n        @keyframes animZoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }\n        @media (max-width: 768px) { [data-jenis] { max-width: 95vw !important; word-wrap: break-word; } }\n    </style>\n</head>\n<body>\n    ${klonRuangKerja.outerHTML}\n\n    <script>\n        document.addEventListener("DOMContentLoaded", function() {\n            const observer = new IntersectionObserver((entries) => {\n                entries.forEach(entry => {\n                    if (entry.isIntersecting) {\n                        let anim = entry.target.getAttribute('data-animasi');\n                        if(anim === 'fade') entry.target.classList.add('anim-fade');\n                        if(anim === 'slide-up') entry.target.classList.add('anim-slide-up');\n                        if(anim === 'zoom') entry.target.classList.add('anim-zoom');\n                        entry.target.classList.remove('animate-on-scroll');\n                        observer.unobserve(entry.target);\n                    }\n                });\n            }, { threshold: 0.1 });\n            document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));\n        });\n    <\/script>\n</body>\n</html>`;
+
+            let blob = new Blob([htmlFinal], { type: 'text/html' });
+            let url = URL.createObjectURL(blob); let a = document.createElement('a');
+            a.href = url; a.download = namaFile; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            let notif = document.getElementById('notifikasi'); notif.innerText = "Halaman HTML berhasil diekspor!";
+            notif.style.display = 'block'; setTimeout(() => { notif.style.display = 'none'; }, 3000);
         }
     </script>
 </body>
