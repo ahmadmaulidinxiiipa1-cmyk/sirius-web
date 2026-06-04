@@ -40,7 +40,7 @@
             padding: 10px 20px; z-index: 1000; flex-shrink: 0;
         }
         .top-bar-left { width: 150px; display: flex; align-items: center; }
-        .top-bar-center { flex-grow: 1; display: flex; justify-content: center; }
+        .top-bar-center { flex-grow: 1; display: flex; justify-content: center; align-items: center; gap: 15px;}
         .top-bar-right { width: 150px; display: flex; justify-content: flex-end; align-items: center; }
 
         #btn-buka-panel { display: none; width: auto; margin-bottom: 0; }
@@ -51,9 +51,13 @@
         }
         #nama-desain-container input {
             background: transparent; border: none; color: #66fcf1; font-size: 16px;
-            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 250px;
+            font-weight: bold; text-align: center; outline: none; font-family: inherit; width: 200px;
         }
         #nama-desain-container input::placeholder { color: #45a29e; }
+
+        .view-toggles { display: flex; gap: 5px; border-left: 1px solid #45a29e; padding-left: 15px;}
+        .btn-view { background: transparent; border: 1px solid #45a29e; color: #66fcf1; padding: 5px 10px; cursor: pointer; border-radius: 5px; transition: 0.3s; font-size: 12px;}
+        .btn-view.aktif { background: #45a29e; color: #0b0c10; }
 
         #status-simpan { color: #27ae60; font-size: 14px; font-weight: bold; transition: all 0.3s ease; }
         
@@ -71,7 +75,16 @@
         
         #ruang-kerja {
             width: 100%; min-height: 2000px; position: relative; background-color: transparent; overflow-x: hidden;
-            user-select: none;
+            user-select: none; transition: max-width 0.4s ease;
+        }
+
+        #ruang-kerja.mode-mobile {
+            max-width: 414px !important;
+            margin: 0 auto;
+            border-left: 2px dashed #45a29e;
+            border-right: 2px dashed #45a29e;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            background-color: #111;
         }
 
         #grid-overlay {
@@ -113,7 +126,6 @@
         .btn-mini-hapus { background: #c0392b; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px; transition: 0.3s; margin-left: auto;}
         .btn-mini-hapus:hover { background: #e74c3c; }
 
-        /* Gaya Khusus Fitur Alignment (Perataan) */
         .btn-align { background: transparent; color: #f39c12; border: 1px solid #f39c12; border-radius: 5px; padding: 4px 8px; cursor: pointer; font-size: 12px; transition: 0.2s;}
         .btn-align:hover { background: #f39c12; color: #0b0c10; }
 
@@ -169,7 +181,6 @@
         .elemen-embed .embed-content { width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
         .elemen-embed .embed-content iframe, .elemen-embed .embed-content * { width: 100%; height: 100%; border: none; }
 
-        /* SMART GUIDES & SELECTION BOX */
         #guide-v { position: absolute; width: 1px; height: 100%; background: #e74c3c; z-index: 9999; display: none; pointer-events: none; top: 0; box-shadow: 0 0 5px #e74c3c;}
         #guide-h { position: absolute; height: 1px; width: 100%; background: #e74c3c; z-index: 9999; display: none; pointer-events: none; left: 0; box-shadow: 0 0 5px #e74c3c;}
         #selection-box { position: absolute; border: 1px solid #3498db; background: rgba(52, 152, 219, 0.2); z-index: 9999; pointer-events: none; display: none; }
@@ -197,6 +208,14 @@
         .mode-pratinjau .elemen-tombol { cursor: pointer !important; transition: 0.2s; }
         .mode-pratinjau .elemen-tombol:hover { transform: scale(1.05); }
 
+        /* EFEK HOVER PRO (Pakai CSS Variable agar rotasi tidak ter-reset) */
+        .mode-pratinjau [data-hover="zoom"] { transition: transform 0.3s ease !important; }
+        .mode-pratinjau [data-hover="zoom"]:hover { transform: rotate(var(--rotasi, 0deg)) scale(1.1) !important; z-index: 9999 !important; }
+        .mode-pratinjau [data-hover="glow"] { transition: box-shadow 0.3s ease !important; }
+        .mode-pratinjau [data-hover="glow"]:hover { box-shadow: 0 0 20px #66fcf1, 0 0 40px #66fcf1 !important; z-index: 9999 !important; }
+        .mode-pratinjau [data-hover="shake"] { transition: transform 0.3s ease !important; }
+        .mode-pratinjau [data-hover="shake"]:hover { transform: rotate(calc(var(--rotasi, 0deg) + 5deg)) scale(1.05) !important; z-index: 9999 !important; }
+
         @media (max-width: 768px) {
             #sidebar-kiri { width: 100%; z-index: 3000; }
             .sidebar-tersembunyi { margin-left: -100%; }
@@ -205,6 +224,7 @@
             #status-simpan { font-size: 12px; }
             #top-bar { padding: 10px; }
             #btn-pratinjau { bottom: 15px; right: 15px; padding: 10px 15px; font-size: 14px; }
+            .view-toggles { display: none; } 
         }
     </style>
 </head>
@@ -219,7 +239,8 @@
             <input type="text" id="input-nama-halaman" placeholder="Halaman baru..." style="flex-grow: 1; padding: 8px; border-radius: 5px; border: none; background: #2c3e50; color: #66fcf1; font-size: 12px;">
             <button class="btn" onclick="buatHalamanBaru()" style="padding: 8px 12px;">+</button>
         </div>
-        <div id="daftar-halaman" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; max-height: 180px; overflow-y: auto;"></div>
+        <div id="daftar-halaman" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; max-height: 180px; overflow-y: auto;">
+        </div>
 
         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
             <button class="btn-sistem" onclick="aksiUndo()" style="flex: 1; background: #f39c12; font-size: 12px;" id="btn-undo">↶ Undo</button>
@@ -277,6 +298,10 @@
                 <div id="nama-desain-container">
                     <input type="text" id="nama-desain" placeholder="Nama Website..." oninput="simpanNamaDesain()">
                 </div>
+                <div class="view-toggles">
+                    <button class="btn-view aktif" id="btn-desktop" onclick="ubahTampilan('desktop')" title="Mode PC / Desktop">💻 Desktop</button>
+                    <button class="btn-view" id="btn-mobile" onclick="ubahTampilan('mobile')" title="Mode Smartphone">📱 Mobile</button>
+                </div>
             </div>
             <div class="top-bar-right">
                 <div id="status-simpan">✅ Tersimpan otomatis</div>
@@ -333,7 +358,6 @@
                         <button class="btn-mini-hapus" onclick="hapusKomponenAktif()" title="Hapus Komponen">🗑️</button>
                     </div>
 
-                    <!-- FITUR BARU: AUTO ALIGNMENT UNTUK GRUP -->
                     <div class="baris-kontrol" id="kontrol-alignment" style="display: none; width: 100%; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
                         <label style="color: #f39c12; font-size: 12px; font-weight: bold; width: 100%;">📏 Ratakan Elemen (Align):</label>
                         <button class="btn-align" onclick="ratakanGrup('kiri')" title="Rata Kiri">⇤ Kiri</button>
@@ -354,6 +378,17 @@
                                 <option value="zoom">Membesar</option>
                             </select>
                         </div>
+                        
+                        <div class="kontrol-item" id="kontrol-hover">
+                            <label title="Efek saat Kursor Mendekat">Hover:</label>
+                            <select id="input-hover" onchange="ubahEfekDesain()" style="width: 80px;">
+                                <option value="">Tidak ada</option>
+                                <option value="zoom">Membesar</option>
+                                <option value="glow">Menyala</option>
+                                <option value="shake">Goyang</option>
+                            </select>
+                        </div>
+
                         <div class="kontrol-item">
                             <label title="Transparansi">Buram:</label>
                             <input type="range" id="input-opasitas" min="0.1" max="1" step="0.1" value="1" oninput="ubahEfekDesain()" style="width: 60px;">
@@ -361,6 +396,10 @@
                         <div class="kontrol-item">
                             <label title="Ketebalan Bayangan">Bayangan:</label>
                             <input type="number" id="input-bayangan" min="0" max="50" value="0" oninput="ubahEfekDesain()" style="width: 40px;">
+                        </div>
+                        <div class="kontrol-item">
+                            <label title="Putar Elemen">Rotasi:</label>
+                            <input type="number" id="input-rotasi" min="0" max="360" value="0" oninput="ubahEfekDesain()" style="width: 45px;">°
                         </div>
                         <div class="kontrol-item" id="kontrol-gradasi-warna" style="display: none;">
                             <label title="Warna Kedua untuk Gradasi">Warna 2:</label>
@@ -386,6 +425,7 @@
                     <div id="kontrol-rumus" style="display: none; flex-direction: column; border-top: 1px solid #45a29e; padding-top: 10px; margin-top: 5px;">
                         <label style="color: #f39c12; font-size: 12px; font-weight: bold;">Editor Matematika (Format LaTeX):</label>
                         <textarea id="input-latex" rows="3" placeholder="Ketik kode LaTeX..." oninput="ubahRumus()"></textarea>
+                        
                         <div class="grid-simbol">
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('^\\circ')" title="Derajat">°</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\frac{a}{b}')" title="Pecahan">a/b</button>
@@ -394,8 +434,8 @@
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\int_{a}^{b}')" title="Integral">∫</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\sum_{i=1}^{n}')" title="Sigma">∑</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\lim_{x \\to \\infty}')" title="Limit">lim</button>
-                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\\\\\ d & e & f \\\\\\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks ]</button>
-                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\\\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{bmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{bmatrix}')" title="Matriks 3x3" style="flex: 1 1 30%;">[ Matriks ]</button>
+                            <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\begin{pmatrix} x \\\\ y \\end{pmatrix}')" title="Vektor" style="flex: 1 1 20%;">[ Vektor ]</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\Delta')" title="Delta">Δ</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\alpha')" title="Alpha">α</button>
                             <button class="btn-mini-aksi" onclick="sisipkanSimbol('\\beta')" title="Beta">β</button>
@@ -427,7 +467,7 @@
         let indexRiwayat = -1;
         let isMerekamRiwayat = true;
 
-        let grupTerpilih = []; // Koleksi elemen multi-seleksi
+        let grupTerpilih = [];
 
         window.onload = function() {
             muatDesainGlobal();
@@ -436,7 +476,7 @@
             setTimeout(() => { simpanDiamDiam(true); }, 500);
         };
 
-        // --- FUNGSI UNDO REDO ---
+        // --- SISTEM UNDO REDO ---
         function rekamRiwayatSistem(stateString) {
             if(!isMerekamRiwayat) return;
             if(indexRiwayat >= 0 && riwayatSistem[indexRiwayat] === stateString) return;
@@ -451,8 +491,7 @@
             if(indexRiwayat > 0) {
                 indexRiwayat--;
                 pulihkanKeRiwayat(riwayatSistem[indexRiwayat]);
-                let status = document.getElementById('status-simpan');
-                status.innerText = "↶ Undo Berhasil"; status.style.color = "#f39c12";
+                tampilkanNotifikasi("↶ Undo Berhasil", "#f39c12");
             }
         }
 
@@ -460,8 +499,7 @@
             if(indexRiwayat < riwayatSistem.length - 1) {
                 indexRiwayat++;
                 pulihkanKeRiwayat(riwayatSistem[indexRiwayat]);
-                let status = document.getElementById('status-simpan');
-                status.innerText = "↷ Redo Berhasil"; status.style.color = "#f39c12";
+                tampilkanNotifikasi("↷ Redo Berhasil", "#f39c12");
             }
         }
 
@@ -483,7 +521,7 @@
             document.getElementById('btn-redo').disabled = (indexRiwayat >= riwayatSistem.length - 1);
         }
 
-        // --- MANAJEMEN HALAMAN ---
+        // --- MANAJEMEN HALAMAN DENGAN PELINDUNG MEMORI ---
         function muatDesainGlobal() {
             let savedName = localStorage.getItem('SiriusWebProjectName');
             if (savedName) document.getElementById('nama-desain').value = savedName;
@@ -497,8 +535,13 @@
             } else {
                 let dataLama = localStorage.getItem('SiriusWebSaveData');
                 let bgLama = localStorage.getItem('SiriusWebBgInputs');
-                let elemenLama = dataLama ? JSON.parse(dataLama) : [];
-                let pengaturanLama = bgLama ? JSON.parse(bgLama) : { warna: "#0b0c10", gambar: "", tinggi: "2000" };
+                let elemenLama = [];
+                let pengaturanLama = { warna: "#0b0c10", gambar: "", tinggi: "2000" };
+                
+                // Mencegah error jika data lama korup
+                try { if(dataLama) elemenLama = JSON.parse(dataLama); } catch(e) {}
+                try { if(bgLama) pengaturanLama = JSON.parse(bgLama); } catch(e) {}
+                
                 databaseHalaman = { 'beranda': { nama: 'Beranda', elemen: elemenLama, pengaturan: pengaturanLama } };
             }
             if (!databaseHalaman[idHalamanAktif]) idHalamanAktif = Object.keys(databaseHalaman)[0];
@@ -569,7 +612,7 @@
 
             if (halAktif.elemen) {
                 halAktif.elemen.forEach(item => {
-                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily, item.opasitas, item.bayangan, item.backgroundLengkap, item.embed, item.animasi, true);
+                    tambahKomponen(item.jenis, { top: item.top, left: item.left }, item.isi, item.warna, item.ukuran, item.bg, item.lebar, item.tinggi, item.radius, item.zindex, item.latex, item.terkunci, item.url, item.fontFamily, item.opasitas, item.bayangan, item.backgroundLengkap, item.embed, item.animasi, item.rotasi, item.hover, true);
                 });
             }
             dataDesainTerakhir = JSON.stringify(halAktif.elemen);
@@ -600,6 +643,16 @@
 
         function simpanNamaDesain() { localStorage.setItem('SiriusWebProjectName', document.getElementById('nama-desain').value); simpanDiamDiam(); }
 
+        // --- SISTEM NOTIFIKASI ---
+        function tampilkanNotifikasi(pesan, warna = "#27ae60") {
+            let notif = document.getElementById('notifikasi');
+            notif.innerText = pesan;
+            notif.style.background = warna;
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+        }
+
+        // --- TOGGLE PRATINJAU ---
         function togglePratinjau() {
             modePratinjau = !modePratinjau;
             let canvas = document.getElementById('canvas');
@@ -617,6 +670,8 @@
                 btnPreview.innerText = '✏️ Edit Lagi';
                 btnPreview.style.background = '#e74c3c';
                 
+                tampilkanNotifikasi("👁️ Mode Pratinjau Aktif. UI & Garis Bantu disembunyikan.", "#f39c12");
+
                 let ruangKerja = document.getElementById('ruang-kerja');
                 let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
                 semuaKomponen.forEach(el => {
@@ -650,8 +705,25 @@
         function tutupPanelKiri() { document.getElementById('sidebar-kiri').classList.add('sidebar-tersembunyi'); document.getElementById('btn-buka-panel').style.display = 'block'; }
         function bukaPanelKiri() { document.getElementById('sidebar-kiri').classList.remove('sidebar-tersembunyi'); document.getElementById('btn-buka-panel').style.display = 'none'; }
 
+        function ubahTampilan(mode) {
+            let ruangKerja = document.getElementById('ruang-kerja');
+            let btnDesktop = document.getElementById('btn-desktop');
+            let btnMobile = document.getElementById('btn-mobile');
+            if (mode === 'mobile') {
+                ruangKerja.classList.add('mode-mobile');
+                btnMobile.classList.add('aktif');
+                btnDesktop.classList.remove('aktif');
+            } else {
+                ruangKerja.classList.remove('mode-mobile');
+                btnDesktop.classList.add('aktif');
+                btnMobile.classList.remove('aktif');
+            }
+            tutupMenuMengambang();
+            bersihkanGrup();
+        }
+
         // --- SISTEM PEMBUATAN KOMPONEN ---
-        function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null, opasitasKustom = null, bayanganKustom = null, backgroundLengkapKustom = null, embedKustom = null, animasiKustom = null, isLoad = false) {
+        function tambahKomponen(jenis, posisiKustom = null, isiKustom = null, warnaKustom = null, ukuranKustom = null, bgKustom = null, lebarKustom = null, tinggiKustom = null, radiusKustom = null, zIndexKustom = 1, latexKustom = null, terkunciKustom = 'false', urlKustom = null, fontFamilyKustom = null, opasitasKustom = null, bayanganKustom = null, backgroundLengkapKustom = null, embedKustom = null, animasiKustom = null, rotasiKustom = null, hoverKustom = null, isLoad = false) {
             let elemenBaru = document.createElement('div');
             let canvasElement = document.getElementById('canvas');
             let defaultTopPx = canvasElement.scrollTop + 150;
@@ -663,6 +735,19 @@
             if (urlKustom) elemenBaru.dataset.url = urlKustom;
             if (embedKustom) elemenBaru.dataset.embed = embedKustom;
             if (animasiKustom) elemenBaru.dataset.animasi = animasiKustom;
+            if (hoverKustom) elemenBaru.dataset.hover = hoverKustom;
+            
+            // PERBAIKAN ROTASI: Menggunakan CSS Variable agar tidak menimpa efek hover CSS
+            if (rotasiKustom) {
+                elemenBaru.dataset.rotasi = rotasiKustom;
+                elemenBaru.style.setProperty('--rotasi', rotasiKustom + 'deg');
+                elemenBaru.style.transform = `rotate(var(--rotasi))`;
+            } else {
+                elemenBaru.dataset.rotasi = "0";
+                elemenBaru.style.setProperty('--rotasi', '0deg');
+                elemenBaru.style.transform = `rotate(var(--rotasi))`;
+            }
+
             if (terkunciKustom === 'true') elemenBaru.classList.add('komponen-terkunci');
 
             if (lebarKustom) elemenBaru.style.width = lebarKustom;
@@ -670,7 +755,7 @@
             if (radiusKustom) elemenBaru.style.borderRadius = radiusKustom;
             if (fontFamilyKustom) elemenBaru.style.fontFamily = fontFamilyKustom;
             if (opasitasKustom) elemenBaru.style.opacity = opasitasKustom;
-            if (bayanganKustom) elemenBaru.style.boxShadow = bayanganKustom;
+            if (bayanganKustom && bayanganKustom !== 'none') elemenBaru.style.boxShadow = bayanganKustom;
 
             switch(jenis) {
                 case 'kotak':
@@ -760,7 +845,7 @@
             if(!isLoad) simpanDiamDiam(); 
         }
 
-        // --- SISTEM LASSO SELECTION (KOTAK BIRU FIX) ---
+        // --- SISTEM LASSO SELECTION ---
         function initSelectionBox() {
             let canvas = document.getElementById('canvas');
             let ruangKerja = document.getElementById('ruang-kerja');
@@ -770,16 +855,14 @@
 
             canvas.addEventListener('mousedown', function(e) {
                 if(modePratinjau) return;
-                // Cegah seleksi aktif saat klik komponen / UI
-                if(e.target.closest('[data-jenis]') || e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container') || e.target.closest('#grid-overlay')) return;
+                if(e.target !== ruangKerja && e.target.className !== 'teks-kanvas' && e.target.id !== 'grid-overlay') return; 
                 
                 tutupMenuMengambang();
                 bersihkanGrup();
                 
-                // Murni berbasis bounding klien, tidak terpengaruh double-scroll
                 let rect = ruangKerja.getBoundingClientRect();
                 startX = e.clientX - rect.left;
-                startY = e.clientY - rect.top;
+                startY = e.clientY - rect.top; 
                 
                 selBox.style.left = startX + 'px';
                 selBox.style.top = startY + 'px';
@@ -794,7 +877,7 @@
                 if(!isDraggingBox) return;
                 let rect = ruangKerja.getBoundingClientRect();
                 let currentX = e.clientX - rect.left;
-                let currentY = e.clientY - rect.top;
+                let currentY = e.clientY - rect.top; 
                 
                 let x = Math.min(startX, currentX);
                 let y = Math.min(startY, currentY);
@@ -812,22 +895,12 @@
                     isDraggingBox = false;
                     selBox.style.display = 'none';
                     
-                    let boxRect = { 
-                        left: parseInt(selBox.style.left), 
-                        top: parseInt(selBox.style.top), 
-                        right: parseInt(selBox.style.left) + parseInt(selBox.style.width), 
-                        bottom: parseInt(selBox.style.top) + parseInt(selBox.style.height) 
-                    };
+                    let boxRect = { left: parseInt(selBox.style.left), top: parseInt(selBox.style.top), right: parseInt(selBox.style.left) + parseInt(selBox.style.width), bottom: parseInt(selBox.style.top) + parseInt(selBox.style.height) };
 
                     if (parseInt(selBox.style.width) > 5 && parseInt(selBox.style.height) > 5) {
                         let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
                         semuaKomponen.forEach(el => {
-                            let elRect = { 
-                                left: el.offsetLeft, 
-                                top: el.offsetTop, 
-                                right: el.offsetLeft + el.offsetWidth, 
-                                bottom: el.offsetTop + el.offsetHeight 
-                            };
+                            let elRect = { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight };
                             if (boxRect.left < elRect.right && boxRect.right > elRect.left && boxRect.top < elRect.bottom && boxRect.bottom > elRect.top) {
                                 if(el.dataset.terkunci !== 'true') {
                                     grupTerpilih.push(el);
@@ -858,7 +931,6 @@
 
                 e.stopPropagation(); 
                 
-                // MULTI SELECT DENGAN SHIFT + KLIK
                 if (e.shiftKey) {
                     if (grupTerpilih.includes(elemen)) {
                         let index = grupTerpilih.indexOf(elemen);
@@ -893,15 +965,10 @@
                 titikYAwal = e.clientY;
                 sedangDigeser = false;
                 
-                // Simpan posisi awal untuk drag bareng-bareng
                 if(grupTerpilih.length > 0) {
-                    grupTerpilih.forEach(el => {
-                        el.dataset.startLeft = el.offsetLeft;
-                        el.dataset.startTop = el.offsetTop;
-                    });
+                    grupTerpilih.forEach(el => { el.dataset.startLeft = el.offsetLeft; el.dataset.startTop = el.offsetTop; });
                 } else {
-                    elemen.dataset.startLeft = elemen.offsetLeft;
-                    elemen.dataset.startTop = elemen.offsetTop;
+                    elemen.dataset.startLeft = elemen.offsetLeft; elemen.dataset.startTop = elemen.offsetTop;
                 }
 
                 document.onmousemove = geserElemen;
@@ -931,18 +998,13 @@
                     let newTopPx = parseInt(elemen.dataset.startTop) + dy;
                     let newLeftPx = parseInt(elemen.dataset.startLeft) + dx;
                     
-                    // SMART GUIDES (GARIS BANTU MAGNETIK)
-                    let guideV = document.getElementById('guide-v');
-                    let guideH = document.getElementById('guide-h');
-                    guideV.style.display = 'none';
-                    guideH.style.display = 'none';
+                    let guideV = document.getElementById('guide-v'); let guideH = document.getElementById('guide-h');
+                    guideV.style.display = 'none'; guideH.style.display = 'none';
                     
                     if(!e.shiftKey) { 
                         let snapThreshold = 10;
-                        let width = elemen.offsetWidth;
-                        let height = elemen.offsetHeight;
-                        let centerX = newLeftPx + width / 2;
-                        let centerY = newTopPx + height / 2;
+                        let width = elemen.offsetWidth; let height = elemen.offsetHeight;
+                        let centerX = newLeftPx + width / 2; let centerY = newTopPx + height / 2;
                         
                         let snappedX = false, snappedY = false;
                         let semuaKomponen = ruangKerja.querySelectorAll('[data-jenis]');
@@ -951,12 +1013,9 @@
                             let target = semuaKomponen[i];
                             if(target === elemen) continue;
                             
-                            let tLeft = target.offsetLeft;
-                            let tTop = target.offsetTop;
-                            let tWidth = target.offsetWidth;
-                            let tHeight = target.offsetHeight;
-                            let tCenterX = tLeft + tWidth / 2;
-                            let tCenterY = tTop + tHeight / 2;
+                            let tLeft = target.offsetLeft; let tTop = target.offsetTop;
+                            let tWidth = target.offsetWidth; let tHeight = target.offsetHeight;
+                            let tCenterX = tLeft + tWidth / 2; let tCenterY = tTop + tHeight / 2;
                             
                             if(!snappedX) {
                                 if(Math.abs(newLeftPx - tLeft) < snapThreshold) { newLeftPx = tLeft; snappedX = true; showGuideV(tLeft); }
@@ -1028,10 +1087,8 @@
             document.getElementById('kontrol-embed').style.display = 'none';
             document.getElementById('btn-kunci').style.display = 'none';
 
-            // Nyalakan fitur perataan khusus grup
             document.getElementById('kontrol-alignment').style.display = 'flex';
-
-            posisikanMenu(grupTerpilih[0]); // Posisikan di dekat elemen pertama yang dipilih
+            posisikanMenu(grupTerpilih[0]); 
         }
 
         function pilihKomponen(elemen) {
@@ -1046,7 +1103,7 @@
 
             document.getElementById('btn-kunci').style.display = 'inline-block';
             document.getElementById('btn-kunci').innerText = (elemen.dataset.terkunci === 'true') ? '🔒' : '🔓';
-            document.getElementById('kontrol-alignment').style.display = 'none'; // Sembunyikan perataan jika pilih tunggal
+            document.getElementById('kontrol-alignment').style.display = 'none'; 
 
             document.getElementById('kontrol-teks').style.display = 'none';
             document.getElementById('kontrol-font').style.display = 'none';
@@ -1057,6 +1114,8 @@
             document.getElementById('kontrol-embed').style.display = 'none';
 
             document.getElementById('input-animasi').value = elemen.dataset.animasi || "";
+            document.getElementById('input-rotasi').value = elemen.dataset.rotasi || "0";
+            document.getElementById('input-hover').value = elemen.dataset.hover || "";
 
             let warnaElemen = window.getComputedStyle(elemen).color;
             if (elemen.dataset.jenis === 'kotak' || elemen.dataset.jenis === 'tombol' || elemen.dataset.jenis === 'audio') {
@@ -1150,11 +1209,8 @@
             menu.style.left = elemen.offsetLeft + "px";
         }
 
-        // --- FITUR ALIGNMENT (PERATAAN GRUP) ---
         function ratakanGrup(tipe) {
             if(grupTerpilih.length < 2) return;
-            
-            // Jadikan elemen pertama yang diklik sebagai titik jangkar (patokan)
             let patokan = grupTerpilih[0];
             let patokanL = patokan.offsetLeft;
             let patokanT = patokan.offsetTop;
@@ -1167,10 +1223,7 @@
 
             grupTerpilih.forEach(el => {
                 if(el === patokan) return;
-                
-                let newLeft = el.offsetLeft;
-                let newTop = el.offsetTop;
-                
+                let newLeft = el.offsetLeft; let newTop = el.offsetTop;
                 if (tipe === 'kiri') newLeft = patokanL;
                 if (tipe === 'kanan') newLeft = patokanR - el.offsetWidth;
                 if (tipe === 'tengah-x') newLeft = patokanCx - (el.offsetWidth / 2);
@@ -1181,9 +1234,7 @@
                 el.style.left = ((newLeft / parentWidth) * 100) + "%";
                 el.style.top = newTop + "px";
             });
-            
-            simpanDiamDiam();
-            posisikanMenu(patokan);
+            simpanDiamDiam(); posisikanMenu(patokan);
         }
 
         function ubahAnimasi() {
@@ -1206,9 +1257,7 @@
             } else { document.getElementById('input-warna-hex').value = warnaBaru; }
             
             targetCollection.forEach(el => {
-                if (el.className.includes('teks') || el.className.includes('rumus') || el.className.includes('embed')) {
-                    el.style.color = warnaBaru;
-                }
+                if (el.className.includes('teks') || el.className.includes('rumus') || el.className.includes('embed')) el.style.color = warnaBaru;
             });
             ubahEfekDesain(); 
         }
@@ -1219,12 +1268,19 @@
 
             let opasitas = document.getElementById('input-opasitas').value;
             let bayangan = document.getElementById('input-bayangan').value;
+            let rotasi = document.getElementById('input-rotasi').value;
             let isGradient = document.getElementById('cek-gradasi').checked;
             let c1 = document.getElementById('input-warna').value; 
             let c2 = document.getElementById('input-warna2').value;
+            let efekHover = document.getElementById('input-hover').value;
 
             targetCollection.forEach(el => {
                 el.style.opacity = opasitas;
+                el.dataset.rotasi = rotasi;
+                el.dataset.hover = efekHover;
+                el.style.setProperty('--rotasi', rotasi + 'deg');
+                el.style.transform = `rotate(var(--rotasi))`;
+
                 if(bayangan > 0) { el.style.boxShadow = `0px ${bayangan/2}px ${bayangan}px rgba(0,0,0,0.6)`; } 
                 else { el.style.boxShadow = 'none'; }
                 
@@ -1350,9 +1406,10 @@
                     radius: window.getComputedStyle(elemen).borderRadius, zindex: parseInt(elemen.style.zIndex || 1) + 1,
                     latex: elemen.dataset.latex, terkunci: 'false', url: elemen.dataset.url || "", fontFamily: window.getComputedStyle(elemen).fontFamily,
                     opasitas: window.getComputedStyle(elemen).opacity, bayangan: window.getComputedStyle(elemen).boxShadow,
-                    backgroundLengkap: elemen.style.background || elemen.style.backgroundColor, embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || ""
+                    backgroundLengkap: elemen.style.background || elemen.style.backgroundColor, embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || "",
+                    rotasi: elemen.dataset.rotasi || "0", hover: elemen.dataset.hover || ""
                 };
-                tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily, data.opasitas, data.bayangan, data.backgroundLengkap, data.embed, data.animasi);
+                tambahKomponen(data.jenis, {top: data.top, left: data.left}, data.isi, data.warna, data.ukuran, data.bg, data.lebar, data.tinggi, data.radius, data.zindex, data.latex, data.terkunci, data.url, data.fontFamily, data.opasitas, data.bayangan, data.backgroundLengkap, data.embed, data.animasi, data.rotasi, data.hover);
             });
             bersihkanGrup(); tutupMenuMengambang();
         }
@@ -1374,7 +1431,6 @@
             let targetCollection = grupTerpilih.length > 0 ? grupTerpilih : (komponenTerpilih ? [komponenTerpilih] : []);
             if(targetCollection.length === 0) return;
 
-            // Gunakan elemen pertama sebagai acuan toggle
             let isTerkunci = targetCollection[0].dataset.terkunci === 'true';
             
             targetCollection.forEach(el => {
@@ -1458,15 +1514,14 @@
         document.addEventListener('keyup', function(e) {
             if (modePratinjau) return;
             const activeEl = document.activeElement;
-            if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable) return;
+            if (activeEl.isContentEditable) return;
 
             if ((komponenTerpilih || grupTerpilih.length > 0) && e.key.includes('Arrow')) {
                 clearTimeout(timerKeyboard); simpanDiamDiam(); 
                 timerKeyboard = setTimeout(() => {
                     let referensiMenu = grupTerpilih.length > 0 ? grupTerpilih[0] : komponenTerpilih;
                     posisikanMenu(referensiMenu);
-                    document.getElementById('menu-mengambang').style.opacity = '1';
-                    document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
+                    document.getElementById('menu-mengambang').style.opacity = '1'; document.getElementById('menu-mengambang').style.pointerEvents = 'auto';
                 }, 200); 
             }
         });
@@ -1488,7 +1543,7 @@
         }
 
         function klikAreaKosong(e) {
-            if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container') || e.target.closest('.btn-aksi-panel')) return;
+            if (e.target.closest('#menu-mengambang') || e.target.closest('#nama-desain-container') || e.target.closest('.btn-aksi-panel') || e.target.closest('.view-toggles')) return;
             if (e.target.id === 'canvas' || e.target.id === 'ruang-kerja' || e.target.className === 'teks-kanvas' || e.target.id === 'grid-overlay') {
                 tutupMenuMengambang(); bersihkanGrup();
             }
@@ -1497,10 +1552,7 @@
         // --- SISTEM PENYIMPANAN CERDAS ---
         function simpanManual() {
             simpanDiamDiam(true); 
-            let notif = document.getElementById('notifikasi');
-            notif.innerText = "Desain halaman berhasil disimpan manual!";
-            notif.style.display = 'block';
-            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+            tampilkanNotifikasi("💾 Desain berhasil disimpan manual!", "#27ae60");
         }
 
         function simpanDiamDiam(paksaSimpan = false) {
@@ -1525,7 +1577,8 @@
                     fontFamily: elemen.style.fontFamily, opasitas: elemen.style.opacity || '1',
                     bayangan: elemen.style.boxShadow || 'none',
                     backgroundLengkap: elemen.style.background || elemen.style.backgroundColor,
-                    embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || ""
+                    embed: elemen.dataset.embed || "", animasi: elemen.dataset.animasi || "",
+                    rotasi: elemen.dataset.rotasi || "0", hover: elemen.dataset.hover || ""
                 });
             });
 
@@ -1570,6 +1623,7 @@
                 el.classList.remove('komponen-aktif', 'komponen-grup-aktif', 'anim-hidden', 'anim-fade', 'anim-slide-up', 'anim-zoom');
                 
                 if(el.dataset.jenis === 'teks' || el.dataset.jenis === 'rumus') el.style.border = 'none';
+                
                 if(el.dataset.jenis === 'tombol' && el.dataset.url) {
                     let link = el.dataset.url;
                     if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
@@ -1580,18 +1634,19 @@
                     if(contentEmbed) contentEmbed.style.pointerEvents = 'auto'; 
                     el.style.background = 'transparent'; el.style.border = 'none';
                 }
+                
                 if(el.dataset.animasi && el.dataset.animasi !== "") { el.classList.add('animate-on-scroll'); }
+                if(el.dataset.hover && el.dataset.hover !== "") { el.setAttribute('data-hover', el.dataset.hover); }
 
                 el.removeAttribute('contenteditable'); el.removeAttribute('data-terkunci');
             });
 
-            let htmlFinal = `<!DOCTYPE html>\n<html lang="id">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${namaWeb} - ${namaHal}</title>\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">\n    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script>\n    <style>\n        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; background-color: #0b0c10; }\n        #ruang-kerja { width: 100%; position: relative; overflow-x: hidden; min-height: 100vh; background-color: ${ruangKerja.style.backgroundColor}; background-image: ${ruangKerja.style.backgroundImage}; background-size: cover; background-position: center; }\n        div { box-sizing: border-box; }\n        .elemen-kotak { position: absolute; overflow: hidden; }\n        .elemen-teks { position: absolute; }\n        .elemen-gambar { position: absolute; background-size: cover; background-position: center; overflow: hidden; }\n        .elemen-video { position: absolute; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-video iframe { width: 100%; height: 100%; border: none; }\n        .elemen-audio { position: absolute; display: flex; justify-content: center; align-items: center; border-radius: 30px; overflow: hidden; background: #1f2833;}\n        .elemen-audio audio { width: 95%; height: 40px; outline: none; }\n        .elemen-tombol { position: absolute; font-weight: bold; text-align: center; transition: 0.3s; }\n        .elemen-tombol:hover { transform: scale(1.05); }\n        .elemen-rumus { position: absolute; }\n        .elemen-embed { position: absolute; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-embed .embed-content { width: 100%; height: 100%; pointer-events: auto; }\n        .elemen-embed .embed-content iframe, .elemen-embed .embed-content * { width: 100%; height: 100%; border: none; }\n        \n        .animate-on-scroll { opacity: 0; }\n        .anim-fade { animation: animFadeIn 0.8s ease forwards; }\n        .anim-slide-up { animation: animSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        .anim-zoom { animation: animZoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        @keyframes animFadeIn { from { opacity: 0; } to { opacity: 1; } }\n        @keyframes animSlideUp { from { opacity: 0; transform: translateY(80px); } to { opacity: 1; transform: translateY(0); } }\n        @keyframes animZoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }\n        @media (max-width: 768px) { [data-jenis] { max-width: 95vw !important; word-wrap: break-word; } }\n    </style>\n</head>\n<body>\n    ${klonRuangKerja.outerHTML}\n\n    <script>\n        document.addEventListener("DOMContentLoaded", function() {\n            const observer = new IntersectionObserver((entries) => {\n                entries.forEach(entry => {\n                    if (entry.isIntersecting) {\n                        let anim = entry.target.getAttribute('data-animasi');\n                        if(anim === 'fade') entry.target.classList.add('anim-fade');\n                        if(anim === 'slide-up') entry.target.classList.add('anim-slide-up');\n                        if(anim === 'zoom') entry.target.classList.add('anim-zoom');\n                        entry.target.classList.remove('animate-on-scroll');\n                        observer.unobserve(entry.target);\n                    }\n                });\n            }, { threshold: 0.1 });\n            document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));\n        });\n    <\/script>\n</body>\n</html>`;
+            let htmlFinal = `<!DOCTYPE html>\n<html lang="id">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${namaWeb} - ${namaHal}</title>\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">\n    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script>\n    <style>\n        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; background-color: #0b0c10; }\n        #ruang-kerja { width: 100%; position: relative; overflow-x: hidden; min-height: 100vh; background-color: ${ruangKerja.style.backgroundColor}; background-image: ${ruangKerja.style.backgroundImage}; background-size: cover; background-position: center; }\n        div { box-sizing: border-box; }\n        .elemen-kotak { position: absolute; overflow: hidden; }\n        .elemen-teks { position: absolute; }\n        .elemen-gambar { position: absolute; background-size: cover; background-position: center; overflow: hidden; }\n        .elemen-video { position: absolute; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-video iframe { width: 100%; height: 100%; border: none; }\n        .elemen-audio { position: absolute; display: flex; justify-content: center; align-items: center; border-radius: 30px; overflow: hidden; background: #1f2833;}\n        .elemen-audio audio { width: 95%; height: 40px; outline: none; }\n        .elemen-tombol { position: absolute; font-weight: bold; text-align: center; transition: 0.3s; }\n        .elemen-tombol:hover { transform: scale(1.05); }\n        .elemen-rumus { position: absolute; }\n        .elemen-embed { position: absolute; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px;}\n        .elemen-embed .embed-content { width: 100%; height: 100%; pointer-events: auto; }\n        .elemen-embed .embed-content iframe, .elemen-embed .embed-content * { width: 100%; height: 100%; border: none; }\n        \n        .animate-on-scroll { opacity: 0; }\n        .anim-fade { animation: animFadeIn 0.8s ease forwards; }\n        .anim-slide-up { animation: animSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        .anim-zoom { animation: animZoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }\n        @keyframes animFadeIn { from { opacity: 0; } to { opacity: 1; } }\n        @keyframes animSlideUp { from { opacity: 0; transform: translateY(80px); } to { opacity: 1; transform: translateY(0); } }\n        @keyframes animZoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }\n        \n        [data-hover="zoom"] { transition: transform 0.3s ease !important; }\n        [data-hover="zoom"]:hover { transform: rotate(var(--rotasi, 0deg)) scale(1.1) !important; z-index: 9999 !important; }\n        [data-hover="glow"] { transition: box-shadow 0.3s ease !important; }\n        [data-hover="glow"]:hover { box-shadow: 0 0 20px #66fcf1, 0 0 40px #66fcf1 !important; z-index: 9999 !important; }\n        [data-hover="shake"] { transition: transform 0.3s ease !important; }\n        [data-hover="shake"]:hover { transform: rotate(calc(var(--rotasi, 0deg) + 5deg)) scale(1.05) !important; z-index: 9999 !important; }\n        \n        @media (max-width: 768px) { [data-jenis] { max-width: 95vw !important; word-wrap: break-word; } }\n    </style>\n</head>\n<body>\n    ${klonRuangKerja.outerHTML}\n\n    <script>\n        document.addEventListener("DOMContentLoaded", function() {\n            const observer = new IntersectionObserver((entries) => {\n                entries.forEach(entry => {\n                    if (entry.isIntersecting) {\n                        let anim = entry.target.getAttribute('data-animasi');\n                        if(anim === 'fade') entry.target.classList.add('anim-fade');\n                        if(anim === 'slide-up') entry.target.classList.add('anim-slide-up');\n                        if(anim === 'zoom') entry.target.classList.add('anim-zoom');\n                        entry.target.classList.remove('animate-on-scroll');\n                        observer.unobserve(entry.target);\n                    }\n                });\n            }, { threshold: 0.1 });\n            document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));\n        });\n    <\/script>\n</body>\n</html>`;
 
             let blob = new Blob([htmlFinal], { type: 'text/html' });
             let url = URL.createObjectURL(blob); let a = document.createElement('a');
             a.href = url; a.download = namaFile; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-            let notif = document.getElementById('notifikasi'); notif.innerText = "Halaman HTML berhasil diekspor!";
-            notif.style.display = 'block'; setTimeout(() => { notif.style.display = 'none'; }, 3000);
+            tampilkanNotifikasi("📦 Halaman HTML berhasil diekspor!", "#8e44ad");
         }
     </script>
 </body>
